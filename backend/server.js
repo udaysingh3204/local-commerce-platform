@@ -22,27 +22,20 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
+  cors: { origin: "*" }
 });
 
 app.set("io", io);
 
-/* ---------------- Middleware ---------------- */
-
 app.use(cors());
 app.use(express.json());
 
-/* ---------------- Health Route ---------------- */
-
+/* HEALTH CHECK ROUTE */
 app.get("/", (req, res) => {
-  res.send("Local Commerce Backend Running 🚀");
+  res.status(200).send("Local Commerce Backend Running 🚀");
 });
 
-/* ---------------- API Routes ---------------- */
-
+/* ROUTES */
 app.use("/api/auth", authRoutes);
 app.use("/api/stores", storeRoutes);
 app.use("/api/products", productRoutes);
@@ -55,10 +48,8 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/wholesale", wholesaleRoutes);
 app.use("/api/inventory", inventoryRoutes);
 
-/* ---------------- Socket.IO ---------------- */
-
+/* SOCKET.IO */
 io.on("connection", (socket) => {
-
   console.log("User connected:", socket.id);
 
   socket.on("deliveryLocationUpdate", (data) => {
@@ -66,25 +57,22 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    console.log("User disconnected");
   });
-
 });
 
-/* ---------------- MongoDB ---------------- */
-
+/* DATABASE */
 mongoose.connect(process.env.MONGO_URI)
 .then(() => {
   console.log("MongoDB connected");
+
+  const PORT = process.env.PORT || 5000;
+
+  server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+
 })
-.catch(err => {
-  console.error("MongoDB connection error:", err);
-});
-
-/* ---------------- Start Server ---------------- */
-
-const PORT = process.env.PORT || 5000;
-
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
+.catch((err) => {
+  console.log("MongoDB Error:", err);
 });
