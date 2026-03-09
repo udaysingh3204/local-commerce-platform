@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Delivery Tracker</title>
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+
+<body>
+
+<h2>Delivery Partner GPS</h2>
+
+<button onclick="startTracking()">Start Tracking</button>
+
+<script>
+
+const socket = io("http://localhost:5000")
+
+function startTracking(){
+
+navigator.geolocation.watchPosition((position)=>{
+
+const data = {
+
+orderId:"69a9eaf8c9765f6d9c2a4dff",
+
+lat: position.coords.latitude,
+
+lng: position.coords.longitude
+
+}
+
+socket.emit("deliveryLocationUpdate",data)
+
+console.log("Location sent",data)
+
+})
+
+}
+
+</script>
+
+</body>
+</html>

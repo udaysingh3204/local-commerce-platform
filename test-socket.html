@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Order Tracking</title>
+</head>
+
+<body>
+
+<h2>Real-Time Order Updates</h2>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script>
+
+const socket = io("http://localhost:5000");
+
+socket.on("connect", () => {
+  console.log("Connected to server");
+});
+
+socket.on("orderStatusUpdated", (order) => {
+  console.log("Order updated:", order);
+});
+
+</script>
+
+</body>
+</html>

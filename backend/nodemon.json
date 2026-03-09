@@ -1,0 +1,6 @@
+{
+  "ignore": [
+    "*.log",
+    "node_modules/*"
+  ]
+}
