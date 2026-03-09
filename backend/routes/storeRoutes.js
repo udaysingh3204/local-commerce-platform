@@ -8,7 +8,7 @@ const {
   getNearbyStores
 } = require("../controllers/storeController");
 
-router.post("/create", createStore);
+router.post("/", createStore);
 router.get("/", getStores);
 router.get("/vendor/:vendorId", getVendorStores);
 router.get("/nearby", getNearbyStores);
