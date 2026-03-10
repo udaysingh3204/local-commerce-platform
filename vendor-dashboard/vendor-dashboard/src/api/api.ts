@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api"
+  baseURL: "https://local-commerce-platform-production.up.railway.app/api"
 });
 
 export default API;
