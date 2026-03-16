@@ -13,7 +13,9 @@ exports.predictDemand = async (storeId) => {
       const id = item.productId.toString()
 
       if (!productDemand[id]) {
+
         productDemand[id] = 0
+
       }
 
       productDemand[id] += item.quantity
@@ -22,6 +24,11 @@ exports.predictDemand = async (storeId) => {
 
   })
 
-  return productDemand
+  /* SORT PRODUCTS BY DEMAND */
+
+  const sortedProducts = Object.entries(productDemand)
+    .sort((a, b) => b[1] - a[1])
+
+  return sortedProducts
 
 }

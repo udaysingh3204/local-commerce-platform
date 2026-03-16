@@ -13,10 +13,14 @@ const orderSchema = new mongoose.Schema({
     ref: "Store",
     required: true
   },
+
   deliveryPartnerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   },
+
+  /* ITEMS */
+
   items: [
     {
       productId: {
@@ -24,28 +28,38 @@ const orderSchema = new mongoose.Schema({
         ref: "Product"
       },
 
+      name: String,
+
+      image: String,
+
       quantity: Number,
 
       price: Number
     }
   ],
 
-  paymentMethod: {
-  type: String,
-  enum: ["cod", "upi", "razorpay"],
-  default: "cod"
-},
+  /* PAYMENT */
 
-paymentStatus: {
-  type: String,
-  enum: ["pending", "paid", "failed"],
-  default: "pending"
-},
+  paymentMethod: {
+    type: String,
+    enum: ["cod", "upi", "razorpay"],
+    default: "cod"
+  },
+
+  paymentStatus: {
+    type: String,
+    enum: ["pending", "paid", "failed"],
+    default: "pending"
+  },
+
+  /* ORDER TOTAL */
 
   totalAmount: {
     type: Number,
     required: true
   },
+
+  /* ORDER STATUS */
 
   status: {
     type: String,
@@ -55,10 +69,46 @@ paymentStatus: {
       "accepted",
       "preparing",
       "out_for_delivery",
-      "delivered"
+      "delivered",
+      "cancelled"
     ]
+  },
+
+  /* DELIVERY TRACKING */
+
+  deliveryLocation: {
+    lat: Number,
+    lng: Number
+  },
+
+  deliveryStartTime: Date,
+
+  deliveryEndTime: Date,
+
+  estimatedDeliveryTime: Number, // minutes
+
+  /* CUSTOMER LOCATION */
+
+  customerLocation: {
+    lat: Number,
+    lng: Number
+  },
+
+  /* STORE LOCATION SNAPSHOT */
+
+  storeLocation: {
+    type: {
+      type: String,
+      enum: ["Point"],
+      default: "Point"
+    },
+    coordinates: {
+      type: [Number]
+    }
   }
 
 }, { timestamps: true });
+
+orderSchema.index({ storeLocation: "2dsphere" });
 
 module.exports = mongoose.model("Order", orderSchema);

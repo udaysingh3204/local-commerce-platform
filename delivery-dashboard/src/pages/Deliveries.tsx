@@ -9,25 +9,31 @@ export default function Deliveries() {
   const partnerId = "69a9ec0110383934be5af02a"
 
   const fetchOrders = async () => {
+
     const res = await API.get(`/delivery/orders/${partnerId}`)
+
     setOrders(res.data)
+
   }
 
   useEffect(() => {
+
     fetchOrders()
+
   }, [])
 
   const updateStatus = async (orderId: string, status: string) => {
 
-    await API.put("/orders/status", {
-      orderId,
+    await API.patch(`/orders/${orderId}/status`, {
       status
     })
 
     fetchOrders()
+
   }
 
   return (
+
     <div className="p-10 bg-gray-100 min-h-screen">
 
       <h1 className="text-3xl font-bold mb-6">
@@ -81,8 +87,15 @@ export default function Deliveries() {
 
         ))}
 
+        {orders.length === 0 && (
+          <p className="text-gray-500">
+            No deliveries assigned
+          </p>
+        )}
+
       </div>
 
     </div>
+
   )
 }

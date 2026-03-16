@@ -22,7 +22,9 @@ const productSchema = new mongoose.Schema({
     default: "general"
   },
 
-  image: String,
+  image: {
+    type: String
+  },
 
   storeId: {
     type: mongoose.Schema.Types.ObjectId,

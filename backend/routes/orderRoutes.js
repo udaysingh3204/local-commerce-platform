@@ -8,10 +8,16 @@ const {
   updateOrderStatus
 } = require("../controllers/orderController");
 
-router.post("/create", createOrder);
+/* CREATE ORDER */
+router.post("/", createOrder);
 
+/* STORE ORDERS */
 router.get("/store/:storeId", getOrdersByStore);
 
+/* CUSTOMER ORDERS */
 router.get("/customer/:customerId", getOrdersByCustomer);
-router.patch("/status", updateOrderStatus);
+
+/* UPDATE ORDER STATUS */
+router.patch("/:id/status", updateOrderStatus);
+
 module.exports = router;
