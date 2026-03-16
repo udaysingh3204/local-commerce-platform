@@ -23,11 +23,7 @@ const userSchema = new mongoose.Schema({
     required: true
   },
 
-  role: {
-    type: String,
-    enum: ["customer", "vendor", "delivery", "admin"],
-    default: "customer"
-  },
+  
 
   address: {
     type: String
@@ -42,9 +38,16 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  location: {
-  lat: Number,
-  lng: Number
+  location:{
+type:{
+type:String,
+enum:["Point"],
+default:"Point"
+},
+coordinates:{
+type:[Number],
+default:[0,0]
+}
 },
 
 isAvailable: {
@@ -54,4 +57,5 @@ isAvailable: {
 
 }, { timestamps: true });
 
+userSchema.index({ location: "2dsphere" });
 module.exports = mongoose.model("User", userSchema);

@@ -1,40 +1,121 @@
 const Order = require("../models/Order");
+const mongoose = require("mongoose");
 
 exports.getStoreAnalytics = async (req, res) => {
 
   try {
 
-    const storeId = req.params.storeId;
+    const storeId = new mongoose.Types.ObjectId(req.params.storeId);
+
+    /* TOTAL ORDERS */
 
     const totalOrders = await Order.countDocuments({ storeId });
 
+
+    /* TOTAL REVENUE */
+
     const revenueData = await Order.aggregate([
-      { $match: { storeId: storeId } },
+      { $match: { storeId } },
       {
         $group: {
           _id: null,
-          totalRevenue: { $sum: "$totalAmount" }
+          revenue: { $sum: "$totalAmount" }
         }
       }
     ]);
 
-    const today = new Date();
-    today.setHours(0,0,0,0);
+    const revenue = revenueData[0]?.revenue || 0;
 
-    const todayOrders = await Order.countDocuments({
+
+    /* ORDER STATUS COUNTS */
+
+    const deliveredOrders = await Order.countDocuments({
       storeId,
-      createdAt: { $gte: today }
+      status: "delivered"
     });
 
+    const preparingOrders = await Order.countDocuments({
+      storeId,
+      status: "preparing"
+    });
+
+    const pendingOrders = await Order.countDocuments({
+      storeId,
+      status: "pending"
+    });
+
+
+    /* DAILY SALES */
+
+    const dailySales = await Order.aggregate([
+      { $match: { storeId } },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt"
+            }
+          },
+          revenue: { $sum: "$totalAmount" }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+
+    const formattedDailySales = dailySales.map(d => ({
+      date: d._id,
+      revenue: d.revenue
+    }));
+
+
+    /* PRODUCT DEMAND */
+
+    const productDemand = await Order.aggregate([
+      { $match: { storeId } },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: "$items.name",
+          sales: { $sum: "$items.quantity" }
+        }
+      },
+      { $sort: { sales: -1 } },
+      { $limit: 5 }
+    ]);
+
+    const formattedProductDemand = productDemand.map(p => ({
+      name: p._id,
+      sales: p.sales
+    }));
+
+
+    /* RESPONSE */
+
     res.json({
+
+      revenue,
+
       totalOrders,
-      totalRevenue: revenueData[0]?.totalRevenue || 0,
-      todayOrders
+
+      deliveredOrders,
+
+      preparingOrders,
+
+      pendingOrders,
+
+      dailySales: formattedDailySales,
+
+      productDemand: formattedProductDemand
+
     });
 
   } catch (error) {
 
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error: error.message
+    });
 
   }
 
