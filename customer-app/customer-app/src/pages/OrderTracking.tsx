@@ -2,7 +2,7 @@ import { MapContainer, TileLayer, Marker } from "react-leaflet"
 import { useEffect, useState } from "react"
 import { io } from "socket.io-client"
 
-const socket = io("http://localhost:5000")
+const socket = io("https://local-commerce-platform-production.up.railway.app/")
 
 export default function OrderTracking(){
 
