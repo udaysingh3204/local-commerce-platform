@@ -1,14 +1,15 @@
 import { useCart } from "../context/CartContext"
 import { useNavigate } from "react-router-dom"
+import type { CartItem } from "../types/cart"
 
 export default function Cart(){
 
-const { cart,removeFromCart } = useCart()
+const { cart, removeFromCart } = useCart()
 
 const navigate = useNavigate()
 
 const total = cart.reduce(
-(sum,item)=>sum + item.price * item.quantity,
+(sum: number, item: CartItem) => sum + item.price * item.quantity,
 0
 )
 
@@ -26,7 +27,7 @@ Your Cart
 
 )}
 
-{cart.map(item=>(
+{cart.map((item: CartItem)=>(
 
 <div
 key={item._id}
@@ -34,26 +35,20 @@ className="flex justify-between bg-white p-4 rounded mb-3"
 >
 
 <p>
-
 {item.name} x {item.quantity}
-
 </p>
 
 <div className="flex gap-4">
 
 <p>
-
 ₹{item.price * item.quantity}
-
 </p>
 
 <button
 onClick={()=>removeFromCart(item._id)}
 className="text-red-500"
 >
-
 Remove
-
 </button>
 
 </div>
@@ -70,9 +65,7 @@ Total ₹{total}
 onClick={()=>navigate("/checkout")}
 className="mt-4 bg-green-600 text-white px-4 py-2 rounded"
 >
-
 Checkout
-
 </button>
 
 </div>
