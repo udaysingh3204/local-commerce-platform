@@ -63,7 +63,7 @@ export default function Products() {
       formData.append("image", imageFile)
 
       const uploadRes = await API.post(
-        "http://localhost:5000/api/upload",
+        "https://local-commerce-platform-production.up.railway.app/api/upload",
         formData
       )
 

@@ -6,7 +6,7 @@ import "leaflet/dist/leaflet.css"
 import "leaflet-routing-machine"
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css"
 
-const socket = io("http://localhost:5000")
+const socket = io("https://local-commerce-platform-production.up.railway.app/")
 
 function Routing({ location }: any) {
 
