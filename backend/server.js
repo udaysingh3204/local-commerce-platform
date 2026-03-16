@@ -30,7 +30,8 @@ const predictionRoutes = require("./routes/predictionRoutes");
 
 const app = express();
 const server = http.createServer(app);
-
+const morgan = require("morgan")
+app.use(morgan("combined"))
 /* SOCKET.IO */
 
 const io = new Server(server, {
@@ -143,3 +144,7 @@ app.use((err, req, res, next) => {
   });
 
 });
+
+const errorHandler = require("./middleware/errorHandler")
+
+app.use(errorHandler)
