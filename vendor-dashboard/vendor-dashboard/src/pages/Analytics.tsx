@@ -121,7 +121,7 @@ Order Status Distribution
 
 <Pie data={orderStatusData} dataKey="value">
 
-{orderStatusData.map((entry,index)=>(
+{orderStatusData.map((_,index)=>(
 
 <Cell key={index} fill={COLORS[index]} />
 
