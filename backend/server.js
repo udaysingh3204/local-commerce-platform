@@ -36,7 +36,11 @@ app.use(morgan("combined"))
 
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: ["https://admin-dashboard-ruddy-eight-35.vercel.app",
+      "https://local-commerce-platform.vercel.app",
+      "https://delivery-dashboard-three-murex.vercel.app",
+      "https://supplier-dashboard-tau.vercel.app",
+      "https://vendor-dashboard-rho.vercel.app"],
     methods: ["GET", "POST", "PATCH"]
   }
 });
@@ -45,7 +49,15 @@ app.set("io", io);
 
 /* GLOBAL MIDDLEWARE */
 
-app.use(cors());
+app.use(cors({
+  origin: ["https://admin-dashboard-ruddy-eight-35.vercel.app",
+    "https://local-commerce-platform.vercel.app",
+    "https://delivery-dashboard-three-murex.vercel.app",
+    "https://supplier-dashboard-tau.vercel.app",
+    "https://vendor-dashboard-rho.vercel.app"
+  ], 
+  credentials: true
+}));
 app.use(express.json());
 
 app.use(helmet())
@@ -67,8 +79,11 @@ app.use((req, res, next) => {
 
 /* HEALTH CHECK */
 
-app.get("/", (req, res) => {
-  res.status(200).send("Local Commerce Backend Running 🚀");
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    uptime: process.uptime()
+  });
 });
 
 /* API ROUTES */
@@ -88,23 +103,29 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/prediction", predictionRoutes);
 
 /* SOCKET EVENTS */
-
 io.on("connection", (socket) => {
 
   console.log("User connected:", socket.id);
 
-  /* DELIVERY LOCATION UPDATE */
+  // 👇 JOIN ROOM PER ORDER
+  socket.on("joinOrderRoom", (orderId) => {
+    socket.join(orderId);
+    console.log(`Joined room: ${orderId}`);
+  });
 
+  // 👇 DRIVER LOCATION UPDATE
   socket.on("deliveryLocationUpdate", (data) => {
+    const { orderId, location } = data;
 
-    io.emit("deliveryLocationUpdate", data);
-
+    // Send ONLY to users tracking this order
+    io.to(orderId).emit("deliveryLocationUpdate", {
+      orderId,
+      location
+    });
   });
 
   socket.on("disconnect", () => {
-
     console.log("User disconnected:", socket.id);
-
   });
 
 });
@@ -133,17 +154,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 });
 
-/* GLOBAL ERROR HANDLER */
 
-app.use((err, req, res, next) => {
-
-  console.error(err.stack);
-
-  res.status(500).json({
-    error: "Something went wrong"
-  });
-
-});
 
 const errorHandler = require("./middleware/errorHandler")
 

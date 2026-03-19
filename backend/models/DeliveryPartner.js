@@ -20,8 +20,24 @@ const deliveryPartnerSchema = new mongoose.Schema({
   isAvailable: {
     type: Boolean,
     default: true
+  },
+
+  // ✅ ADD THIS (CRITICAL)
+  location: {
+    type: {
+      type: String,
+      enum: ["Point"],
+      default: "Point"
+    },
+    coordinates: {
+      type: [Number],
+      default: []
+    }
   }
 
 }, { timestamps: true });
+
+// ✅ ADD INDEX (IMPORTANT FOR GEO)
+deliveryPartnerSchema.index({ location: "2dsphere" });
 
 module.exports = mongoose.model("DeliveryPartner", deliveryPartnerSchema);

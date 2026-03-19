@@ -1,118 +1,159 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { io } from "socket.io-client"
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
-import L from "leaflet"
-
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet"
+import { getDistance } from "geolib"
+import { useParams } from "react-router-dom"
 import "leaflet/dist/leaflet.css"
-import "leaflet-routing-machine"
-import "leaflet-routing-machine/dist/leaflet-routing-machine.css"
 
 const socket = io("https://local-commerce-platform-production.up.railway.app")
 
-const RoutingMachine = ({ location }: any) => {
+// 🔥 Smooth animation hook
+function useSmoothLocation(targetLocation: any) {
+  const [smoothLocation, setSmoothLocation] = useState<any>(targetLocation)
+  const animationRef = useRef<any>(null)
 
-const map = useMap()
+  useEffect(() => {
+    if (!targetLocation) return
 
-useEffect(() => {
+    let start = smoothLocation || targetLocation
+    let end = targetLocation
 
-if (!location) return
+    let progress = 0
 
-const routingControl = (L as any).Routing.control({
-waypoints:[
-L.latLng(28.5355,77.3910),
-L.latLng(location.lat,location.lng)
-],
-routeWhileDragging:false,
-addWaypoints:false
-}).addTo(map)
+    const animate = () => {
+      progress += 0.05
 
-return () => {
-map.removeControl(routingControl)
+      if (progress >= 1) {
+        setSmoothLocation(end)
+        return
+      }
+
+      const lat = start.lat + (end.lat - start.lat) * progress
+      const lng = start.lng + (end.lng - start.lng) * progress
+
+      setSmoothLocation({ lat, lng })
+
+      animationRef.current = requestAnimationFrame(animate)
+    }
+
+    animationRef.current = requestAnimationFrame(animate)
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
+  }, [targetLocation])
+
+  return smoothLocation
 }
 
-},[location,map])
+export default function TrackOrder() {
 
-return null
-}
+  const { orderId } = useParams()
 
-export default function TrackOrder(){
+  const [rawLocation, setRawLocation] = useState<any>(null)
+  const smoothLocation = useSmoothLocation(rawLocation)
 
-const [location,setLocation] = useState<any>(null)
+  const [eta, setEta] = useState<number | null>(null)
+  const [status, setStatus] = useState<string>("pending")
 
-useEffect(()=>{
+  const customerLocation = { lat: 28.5355, lng: 77.3910 }
 
-socket.on("deliveryLocationUpdate",(data)=>{
+  useEffect(() => {
 
-setLocation({
-lat:data.lat,
-lng:data.lng,
-eta:data.eta
-})
+    if (!orderId) return
 
-})
+    // ✅ Join socket room
+    socket.emit("joinOrderRoom", orderId)
 
-return ()=>{
-socket.off("deliveryLocationUpdate")
-}
+    const handleLocation = (data: any) => {
+      if (data.orderId !== orderId) return
 
-},[])
+      const loc = {
+        lat: data.location.lat,
+        lng: data.location.lng
+      }
 
-return(
+      setRawLocation(loc)
 
-<div style={{height:"100vh"}}>
+      // ETA calculation
+      const distance = getDistance(
+        { latitude: loc.lat, longitude: loc.lng },
+        { latitude: customerLocation.lat, longitude: customerLocation.lng }
+      )
 
-<h2 style={{padding:"10px"}}>
-Live Delivery Tracking
-</h2>
+      const speed = 8.33
+      const minutes = Math.ceil((distance / speed) / 60)
 
-<MapContainer
-center={[28.5355,77.3910]}
-zoom={15}
-style={{height:"90vh"}}
->
+      setEta(minutes)
+    }
 
-<TileLayer
-url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-/>
+    const handleStatus = (data: any) => {
+      if (data.orderId === orderId) {
+        setStatus(data.status)
+      }
+    }
 
-{location && (
+    socket.on("deliveryLocationUpdate", handleLocation)
+    socket.on("orderStatusUpdated", handleStatus)
 
-<>
-<Marker position={[location.lat,location.lng]}>
-<Popup>
-Delivery Partner Location
-</Popup>
-</Marker>
+    return () => {
+      socket.off("deliveryLocationUpdate", handleLocation)
+      socket.off("orderStatusUpdated", handleStatus)
+    }
 
-<RoutingMachine location={location} />
-</>
+  }, [orderId])
 
-)}
+  return (
+    <div style={{ height: "100vh" }}>
 
-</MapContainer>
+      <h2 style={{ padding: "10px" }}>
+        🚚 Live Delivery Tracking
+      </h2>
 
-{location && (
+      <MapContainer
+        center={[customerLocation.lat, customerLocation.lng]}
+        zoom={15}
+        style={{ height: "90vh" }}
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-<div
-style={{
-position:"absolute",
-top:80,
-left:20,
-background:"white",
-padding:"12px",
-borderRadius:"10px",
-boxShadow:"0 3px 10px rgba(0,0,0,0.2)"
-}}
->
+        {smoothLocation && (
+          <Marker position={[smoothLocation.lat, smoothLocation.lng]}>
+            <Popup>Delivery Partner</Popup>
+          </Marker>
+        )}
+      </MapContainer>
 
-🚚 ETA: {location.eta} minutes
+      {/* ETA */}
+      {eta !== null && (
+        <div style={{
+          position: "absolute",
+          top: 80,
+          left: 20,
+          background: "white",
+          padding: "12px",
+          borderRadius: "10px",
+          boxShadow: "0 3px 10px rgba(0,0,0,0.2)"
+        }}>
+          ⏱️ ETA: {eta} mins
+        </div>
+      )}
 
-</div>
+      {/* STATUS */}
+      <div style={{
+        position: "absolute",
+        bottom: 20,
+        left: 20,
+        background: "white",
+        padding: "12px",
+        borderRadius: "10px",
+        boxShadow: "0 3px 10px rgba(0,0,0,0.2)"
+      }}>
+        📦 Status: {status}
+      </div>
 
-)}
-
-</div>
-
-)
-
+    </div>
+  )
 }

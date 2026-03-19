@@ -1,39 +1,45 @@
 import { useEffect } from "react"
 import { io } from "socket.io-client"
 
-const socket = io("https://local-commerce-platform-production.up.railway.app/")
+const socket = io("https://local-commerce-platform-production.up.railway.app")
 
-export default function LocationSender(){
+type Props = {
+  orderId: string
+}
 
-const partnerId="69a9ec0110383934be5af02a"
+export default function LocationSender({ orderId }: Props) {
 
-const orderId="ORDER_ID"
+  useEffect(() => {
 
-useEffect(()=>{
+    if (!orderId) return
 
-navigator.geolocation.watchPosition((pos)=>{
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords
 
-socket.emit("deliveryLocationUpdate",{
+        console.log("Sending location:", latitude, longitude)
 
-partnerId,
-orderId,
-lat:pos.coords.latitude,
-lng:pos.coords.longitude
+        socket.emit("deliveryLocationUpdate", {
+          orderId,
+          location: {
+            lat: latitude,
+            lng: longitude
+          }
+        })
+      },
+      (err) => {
+        console.error("Location error:", err)
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 5000
+      }
+    )
 
-})
+    return () => navigator.geolocation.clearWatch(watchId)
 
-})
+  }, [orderId])
 
-},[])
-
-return(
-
-<div className="p-10">
-
-<h1>Sending Live Location...</h1>
-
-</div>
-
-)
-
+  return null
 }
