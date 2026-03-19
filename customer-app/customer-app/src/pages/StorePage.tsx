@@ -5,86 +5,98 @@ import { useCart } from "../context/CartContext"
 
 export default function StorePage(){
 
-const { storeId } = useParams()
+  const { storeId } = useParams()
+  const navigate = useNavigate()
 
-const navigate = useNavigate()
+  const [products,setProducts] = useState<any[]>([])
+  const [loading,setLoading] = useState(true)
 
-const [products,setProducts] = useState<any[]>([])
+  const { addToCart, cart } = useCart()
 
-const { addToCart } = useCart()
+  const fetchProducts = async()=>{
+    try{
+      const res = await API.get(`/products/store/${storeId}`)
+      setProducts(res.data)
+    }catch(err){
+      console.error(err)
+    }finally{
+      setLoading(false)
+    }
+  }
 
-const fetchProducts = async()=>{
+  useEffect(()=>{
+    fetchProducts()
+  },[storeId])
 
-const res = await API.get(`/products/store/${storeId}`)
+  return(
 
-setProducts(res.data)
+    <div className="p-8 bg-gray-100 min-h-screen">
 
-}
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-8">
 
-useEffect(()=>{
+        <h1 className="text-3xl font-bold">
+          🏪 Store Products
+        </h1>
 
-fetchProducts()
+        <button
+          onClick={()=>navigate("/cart")}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow"
+        >
+          🛒 Cart ({cart.length})
+        </button>
 
-},[])
+      </div>
 
-return(
+      {/* LOADING */}
+      {loading && <p>Loading products...</p>}
 
-<div className="p-10 bg-gray-100 min-h-screen">
+      {/* EMPTY */}
+      {!loading && products.length === 0 && (
+        <p>No products available</p>
+      )}
 
-<div className="flex justify-between items-center mb-6">
+      {/* PRODUCT GRID */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
 
-<h1 className="text-3xl font-bold">
-Store Products
-</h1>
+        {products.map(product=>(
 
-<button
-onClick={()=>navigate("/cart")}
-className="bg-green-600 text-white px-4 py-2 rounded"
->
-Go To Cart
-</button>
+          <div
+            key={product._id}
+            className="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-5"
+          >
 
-</div>
+            {/* IMAGE */}
+            <img
+              src={product.image || "https://via.placeholder.com/150"}
+              className="w-full h-40 object-cover rounded-lg mb-4"
+            />
 
-<div className="grid grid-cols-3 gap-6">
+            {/* NAME */}
+            <h2 className="text-lg font-semibold">
+              {product.name}
+            </h2>
 
-{products.map(product=>(
+            {/* PRICE */}
+            <p className="text-gray-600 mb-3">
+              ₹{product.price}
+            </p>
 
-<div
-key={product._id}
-className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition"
->
+            {/* BUTTON */}
+            <button
+              onClick={()=>addToCart(product)}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg"
+            >
+              ➕ Add to Cart
+            </button>
 
-<img
-src={product.image}
-className="w-full h-40 object-cover rounded mb-3"
-/>
+          </div>
 
-<h2 className="font-bold text-lg">
-{product.name}
-</h2>
+        ))}
 
-<p className="text-gray-500 mb-3">
-₹{product.price}
-</p>
+      </div>
 
-<button
-onClick={()=>addToCart(product)}
-className="bg-blue-600 text-white px-4 py-2 rounded"
->
+    </div>
 
-Add To Cart
-
-</button>
-
-</div>
-
-))}
-
-</div>
-
-</div>
-
-)
-
+  )
 }

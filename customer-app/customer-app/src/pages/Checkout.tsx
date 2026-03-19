@@ -1,50 +1,56 @@
+import { useCart } from "../context/CartContext"
 import API from "../api/api"
+import { useNavigate } from "react-router-dom"
 
-export default function Checkout({cart}:any){
+export default function Checkout(){
 
-const placeOrder = async()=>{
+  const { cart, setCart } = useCart()
+  const navigate = useNavigate()
 
-const order = {
+  const placeOrder = async () => {
 
-customerId:"demo_customer",
-storeId:cart[0].storeId,
+    if(cart.length === 0){
+      alert("Cart is empty")
+      return
+    }
 
-items:cart.map((p:any)=>({
+    const order = {
+      customerId: "65f000000000000000000001",
+      storeId: cart[0].storeId,
+      items: cart.map((p:any)=>({
+        productId: p._id,
+        quantity: p.quantity
+      })),
+      totalAmount: cart.reduce(
+        (sum:any,p:any)=>sum+p.price*p.quantity,
+        0
+      )
+    }
 
-productId:p._id,
-quantity:p.quantity
+    const res = await API.post("/orders", order)
 
-})),
+    alert("Order placed successfully 🚀")
 
-totalAmount:cart.reduce((sum:any,p:any)=>sum+p.price*p.quantity,0)
+    setCart([])
 
-}
+    // ✅ FIXED ROUTE
+    navigate(`/track/${res.data.order._id}`)
+  }
 
-await API.post("/orders",order)
+  return(
+    <div className="p-10">
 
-alert("Order placed successfully")
+      <h1 className="text-3xl font-bold mb-6">
+        Checkout
+      </h1>
 
-}
+      <button
+        onClick={placeOrder}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        Place Order
+      </button>
 
-return(
-
-<div className="p-10">
-
-<h1 className="text-3xl font-bold mb-6">
-Checkout
-</h1>
-
-<button
-onClick={placeOrder}
-className="bg-blue-600 text-white px-4 py-2 rounded"
->
-
-Place Order
-
-</button>
-
-</div>
-
-)
-
+    </div>
+  )
 }

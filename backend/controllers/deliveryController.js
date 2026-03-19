@@ -3,13 +3,24 @@ const User = require("../models/User");
 const Order = require("../models/Order");
 
 
+/* ============================= */
 /* REGISTER DELIVERY PARTNER */
+/* ============================= */
 
 exports.registerDeliveryPartner = async (req, res) => {
-
   try {
 
-    const partner = await DeliveryPartner.create(req.body);
+    const { name, phone, location } = req.body;
+
+    const partner = await DeliveryPartner.create({
+      name,
+      phone,
+      isAvailable: true,
+      location: {
+        type: "Point",
+        coordinates: [location.lng, location.lat] // ✅ FIXED
+      }
+    });
 
     res.json({
       message: "Delivery partner registered",
@@ -17,21 +28,16 @@ exports.registerDeliveryPartner = async (req, res) => {
     });
 
   } catch (error) {
-
-    res.status(500).json({
-      error: error.message
-    });
-
+    res.status(500).json({ error: error.message });
   }
-
 };
 
 
-
+/* ============================= */
 /* MANUAL DELIVERY ASSIGNMENT */
+/* ============================= */
 
 exports.assignDelivery = async (req, res) => {
-
   try {
 
     const { orderId, deliveryPartnerId } = req.body;
@@ -45,7 +51,8 @@ exports.assignDelivery = async (req, res) => {
       { returnDocument: "after" }
     );
 
-    await User.findByIdAndUpdate(
+    // ❗ If using DeliveryPartner model, update that instead
+    await DeliveryPartner.findByIdAndUpdate(
       deliveryPartnerId,
       { isAvailable: false }
     );
@@ -56,52 +63,42 @@ exports.assignDelivery = async (req, res) => {
     });
 
   } catch (error) {
-
-    res.status(500).json({
-      error: error.message
-    });
-
+    res.status(500).json({ error: error.message });
   }
-
 };
 
 
-
+/* ============================= */
 /* GET DELIVERY ORDERS */
+/* ============================= */
 
 exports.getAssignedOrders = async (req, res) => {
-
   try {
 
     const orders = await Order.find({
       deliveryPartnerId: req.params.partnerId
     })
-    .populate("items.productId")
-    .sort({ createdAt: -1 });
+      .populate("items.productId")
+      .sort({ createdAt: -1 });
 
     res.json(orders);
 
   } catch (error) {
-
-    res.status(500).json({
-      error: error.message
-    });
-
+    res.status(500).json({ error: error.message });
   }
-
 };
 
 
-
+/* ============================= */
 /* UPDATE DELIVERY PARTNER LOCATION */
+/* ============================= */
 
 exports.updateLocation = async (req, res) => {
-
   try {
 
     const { partnerId, lat, lng } = req.body;
 
-    const user = await User.findByIdAndUpdate(
+    const partner = await DeliveryPartner.findByIdAndUpdate(
       partnerId,
       {
         location: {
@@ -112,32 +109,25 @@ exports.updateLocation = async (req, res) => {
       { returnDocument: "after" }
     );
 
-    /* REALTIME LOCATION UPDATE */
-
     req.app.get("io").emit("deliveryLocationUpdate", {
       partnerId,
       lat,
       lng
     });
 
-    res.json(user);
+    res.json(partner);
 
   } catch (error) {
-
-    res.status(500).json({
-      error: error.message
-    });
-
+    res.status(500).json({ error: error.message });
   }
-
 };
 
 
-
+/* ============================= */
 /* DISTANCE FUNCTION */
+/* ============================= */
 
 function getDistance(lat1, lng1, lat2, lng2) {
-
   const R = 6371;
 
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -152,21 +142,29 @@ function getDistance(lat1, lng1, lat2, lng2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   return R * c;
-
 }
 
 
-
-/* AUTO ASSIGN NEAREST DELIVERY PARTNER */
+/* ============================= */
+/* AUTO ASSIGN DELIVERY */
+/* ============================= */
 
 exports.autoAssignDelivery = async (req, res) => {
-
   try {
 
-    const { storeLat, storeLng, orderId } = req.body;
+    const { orderId } = req.body;
 
-    const partners = await User.find({
-      role: "delivery",
+    const order = await Order.findById(orderId);
+
+    if (!order || !order.storeLocation || !order.storeLocation.coordinates) {
+      return res.json({
+        message: "Invalid order or missing location"
+      });
+    }
+
+    const [storeLng, storeLat] = order.storeLocation.coordinates;
+
+    const partners = await DeliveryPartner.find({
       isAvailable: true
     });
 
@@ -187,12 +185,9 @@ exports.autoAssignDelivery = async (req, res) => {
       );
 
       if (distance < minDistance) {
-
         minDistance = distance;
         nearest = p;
-
       }
-
     }
 
     if (!nearest) {
@@ -201,14 +196,9 @@ exports.autoAssignDelivery = async (req, res) => {
       });
     }
 
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      {
-        deliveryPartnerId: nearest._id,
-        status: "out_for_delivery"
-      },
-      { returnDocument: "after" }
-    );
+    order.deliveryPartnerId = nearest._id;
+    order.status = "out_for_delivery";
+    await order.save();
 
     nearest.isAvailable = false;
     await nearest.save();
@@ -219,19 +209,29 @@ exports.autoAssignDelivery = async (req, res) => {
     });
 
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
-    res.status(500).json({
-      error: error.message
+
+/* ============================= */
+/* REAL-TIME DRIVER LOCATION */
+/* ============================= */
+
+exports.updateDriverLocation = async (req, res) => {
+  try {
+    const { orderId, lat, lng } = req.body;
+
+    const io = req.app.get("io");
+
+    io.to(orderId).emit("deliveryLocationUpdate", {
+      orderId,
+      location: { lat, lng }
     });
 
+    res.json({ message: "Location updated" });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-  const eta = calculateETA(storeLocation, { lat, lng })
-
-req.app.get("io").emit("deliveryLocationUpdate", {
-partnerId,
-lat,
-lng,
-eta
-})
-
 };

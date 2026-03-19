@@ -4,9 +4,9 @@ const Notification = require("../models/Notification");
 const Store = require("../models/Store");
 
 const { assignNearestDriver } = require("../services/dispatchService");
+const orderQueue = require("../queues/orderQueue");
 
 exports.createOrder = async (req, res) => {
-
   try {
 
     const { items, storeId } = req.body;
@@ -32,7 +32,6 @@ exports.createOrder = async (req, res) => {
       }
 
       product.stock -= item.quantity;
-
       await product.save();
 
       orderItems.push({
@@ -42,39 +41,47 @@ exports.createOrder = async (req, res) => {
         quantity: item.quantity,
         price: product.price
       });
-
     }
 
-    /* CREATE ORDER */
-
-    const order = await Order.create({
-      ...req.body,
-      items: orderItems
-    });
-
-    /* GET STORE LOCATION */
+    /* 🔥 GET STORE LOCATION BEFORE ORDER CREATION */
 
     const store = await Store.findById(storeId);
 
-    if (store) {
-      order.storeLocation = store.location;
+    let storeLocation = undefined;
+
+    if (store && store.location && store.location.coordinates) {
+      storeLocation = {
+        type: "Point",
+        coordinates: store.location.coordinates
+      };
     }
+
+    /* 🔥 CREATE ORDER (WITH storeLocation) */
+
+    const order = await Order.create({
+      ...req.body,
+      items: orderItems,
+      storeLocation // ✅ FIXED HERE
+    });
+
+    /* QUEUE JOB */
+
+    await orderQueue.add("new-order", {
+      orderId: order._id.toString()
+    });
 
     /* SMART DRIVER DISPATCH */
 
     const driver = await assignNearestDriver(order);
 
     if (driver) {
-
       order.deliveryPartnerId = driver._id;
-
       await order.save();
 
       req.app.get("io").emit("deliveryAssigned", {
         orderId: order._id,
         driverId: driver._id
       });
-
     }
 
     /* REALTIME EVENT */
@@ -97,21 +104,17 @@ exports.createOrder = async (req, res) => {
     });
 
   } catch (error) {
-
     res.status(500).json({
       error: error.message
     });
-
   }
-
 };
 
 
+/* GET ORDERS BY STORE */
 
 exports.getOrdersByStore = async (req, res) => {
-
   try {
-
     const orders = await Order.find({
       storeId: req.params.storeId
     }).sort({ createdAt: -1 });
@@ -119,21 +122,15 @@ exports.getOrdersByStore = async (req, res) => {
     res.json(orders);
 
   } catch (error) {
-
-    res.status(500).json({
-      error: error.message
-    });
-
+    res.status(500).json({ error: error.message });
   }
-
 };
 
 
+/* GET ORDERS BY CUSTOMER */
 
 exports.getOrdersByCustomer = async (req, res) => {
-
   try {
-
     const orders = await Order.find({
       customerId: req.params.customerId
     }).sort({ createdAt: -1 });
@@ -141,30 +138,29 @@ exports.getOrdersByCustomer = async (req, res) => {
     res.json(orders);
 
   } catch (error) {
-
-    res.status(500).json({
-      error: error.message
-    });
-
+    res.status(500).json({ error: error.message });
   }
-
 };
 
 
+/* UPDATE ORDER STATUS */
 
 exports.updateOrderStatus = async (req, res) => {
-
   try {
-
     const { status } = req.body;
 
     const order = await Order.findByIdAndUpdate(
       req.params.id,
       { status },
-      { returnDocument: "after" }
+      { new: true }
     );
 
-    req.app.get("io").emit("orderStatusUpdated", order);
+    const io = req.app.get("io");
+
+    io.to(order._id.toString()).emit("orderStatusUpdated", {
+      orderId: order._id,
+      status
+    });
 
     res.json({
       message: "Order status updated",
@@ -172,11 +168,6 @@ exports.updateOrderStatus = async (req, res) => {
     });
 
   } catch (error) {
-
-    res.status(500).json({
-      error: error.message
-    });
-
+    res.status(500).json({ error: error.message });
   }
-
 };

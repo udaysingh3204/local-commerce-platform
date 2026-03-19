@@ -71,7 +71,9 @@ exports.getNearbyStores = async (req, res) => {
 
   try {
 
-    const { lat, lng, radius = 5 } = req.query
+    const latNum = parseFloat(req.query.lat)
+const lngNum = parseFloat(req.query.lng)
+const radiusNum = parseFloat(req.query.radius) || 5
 
     if (!lat || !lng) {
 
@@ -89,7 +91,7 @@ exports.getNearbyStores = async (req, res) => {
 
           $geometry: {
             type: "Point",
-            coordinates: [parseFloat(lng), parseFloat(lat)]
+            coordinates: [lngNum, latNum]
           },
 
           $maxDistance: radius * 1000

@@ -23,7 +23,7 @@ return(
 
 <Route path="/cart" element={<Cart/>}/>
 
-<Route path="/track" element={<TrackOrder/>}/>
+<Route path="/track/:orderId" element={<TrackOrder/>}/>
 <Route path="/checkout" element={<Checkout/>}/>
 </Routes>
 
