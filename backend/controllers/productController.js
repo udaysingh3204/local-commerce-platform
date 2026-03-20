@@ -1,15 +1,24 @@
 const Product = require("../models/Product");
-const redis = require("../config/redis");
 
-/* HELPER: CLEAR PRODUCT CACHE */
+let redis = null;
+
+try {
+  redis = require("../config/redis");
+} catch (err) {
+  console.log("Redis disabled");
+}
+
+/* CLEAR CACHE SAFELY */
 const clearProductCache = async () => {
+  if (!redis) return;
+
   try {
     const keys = await redis.keys("products:*");
     if (keys.length > 0) {
       await redis.del(keys);
     }
   } catch (err) {
-    console.error("Cache clear error:", err);
+    console.log("Cache clear skipped");
   }
 };
 
@@ -30,18 +39,22 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-/* GET PRODUCTS (CACHE + PAGINATION + COUNT) */
+/* GET PRODUCTS */
 exports.getProducts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
-
     const cacheKey = `products:${page}`;
 
-    const cached = await redis.get(cacheKey);
+    let cached = null;
+
+    if (redis) {
+      try {
+        cached = await redis.get(cacheKey);
+      } catch {}
+    }
 
     if (cached) {
-      console.log("Serving from Redis");
       return res.json(JSON.parse(cached));
     }
 
@@ -59,7 +72,11 @@ exports.getProducts = async (req, res) => {
       totalProducts: total
     };
 
-    await redis.set(cacheKey, JSON.stringify(response), "EX", 60);
+    if (redis) {
+      try {
+        await redis.set(cacheKey, JSON.stringify(response), "EX", 60);
+      } catch {}
+    }
 
     res.json(response);
 
@@ -68,13 +85,19 @@ exports.getProducts = async (req, res) => {
   }
 };
 
-/* GET PRODUCTS BY STORE (WITH CACHE) */
+/* GET PRODUCTS BY STORE */
 exports.getProductsByStore = async (req, res) => {
   try {
     const storeId = req.params.storeId;
     const cacheKey = `products:store:${storeId}`;
 
-    const cached = await redis.get(cacheKey);
+    let cached = null;
+
+    if (redis) {
+      try {
+        cached = await redis.get(cacheKey);
+      } catch {}
+    }
 
     if (cached) {
       return res.json(JSON.parse(cached));
@@ -82,7 +105,11 @@ exports.getProductsByStore = async (req, res) => {
 
     const products = await Product.find({ storeId });
 
-    await redis.set(cacheKey, JSON.stringify(products), "EX", 60);
+    if (redis) {
+      try {
+        await redis.set(cacheKey, JSON.stringify(products), "EX", 60);
+      } catch {}
+    }
 
     res.json(products);
 
