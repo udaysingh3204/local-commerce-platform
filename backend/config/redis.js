@@ -1,16 +1,23 @@
 const Redis = require("ioredis");
 
-const redis = new Redis(process.env.REDIS_URL, {
-  maxRetriesPerRequest: null,
-  tls: {} // ✅ required for Upstash
-});
+let redis = null;
 
-redis.on("connect", () => {
-  console.log("✅ Redis Connected");
-});
+if (process.env.REDIS_URL) {
+  redis = new Redis(process.env.REDIS_URL, {
+    maxRetriesPerRequest: 1,
+    tls: {}
+  });
 
-redis.on("error", (err) => {
-  console.error("Redis error:", err);
-});
+  redis.on("connect", () => {
+    console.log("✅ Redis Connected");
+  });
+
+  redis.on("error", (err) => {
+    console.log("⚠️ Redis disabled (connection failed)");
+  });
+
+} else {
+  console.log("⚠️ Redis not configured → skipping");
+}
 
 module.exports = redis;

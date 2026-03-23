@@ -68,48 +68,35 @@ exports.getVendorStores = async (req, res) => {
 /* NEARBY STORES */
 
 exports.getNearbyStores = async (req, res) => {
-
   try {
+    const latNum = parseFloat(req.query.lat);
+    const lngNum = parseFloat(req.query.lng);
+    const radiusNum = parseFloat(req.query.radius) || 5;
 
-    const latNum = parseFloat(req.query.lat)
-const lngNum = parseFloat(req.query.lng)
-const radiusNum = parseFloat(req.query.radius) || 5
-
-    if (!lat || !lng) {
-
+    if (!latNum || !lngNum) {
       return res.status(400).json({
         message: "Latitude and longitude required"
-      })
-
+      });
     }
 
     const stores = await Store.find({
-
       location: {
-
         $near: {
-
           $geometry: {
             type: "Point",
             coordinates: [lngNum, latNum]
           },
-
-          $maxDistance: radius * 1000
-
+          $maxDistance: radiusNum * 1000
         }
-
       }
+    });
 
-    })
-
-    res.json(stores)
+    res.json(stores);
 
   } catch (error) {
-
+    console.error("Nearby store error:", error);
     res.status(500).json({
       error: error.message
-    })
-
+    });
   }
-
-}
+};
