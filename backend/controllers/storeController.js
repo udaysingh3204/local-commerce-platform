@@ -73,11 +73,11 @@ exports.getNearbyStores = async (req, res) => {
     const lngNum = parseFloat(req.query.lng);
     const radiusNum = parseFloat(req.query.radius) || 5;
 
-    if (!latNum || !lngNum) {
-      return res.status(400).json({
-        message: "Latitude and longitude required"
-      });
-    }
+    if (isNaN(latNum) || isNaN(lngNum)) {
+  return res.status(400).json({
+    message: "Latitude and longitude required"
+  });
+}
 
     const stores = await Store.find({
       location: {
