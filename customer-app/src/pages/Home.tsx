@@ -13,7 +13,6 @@ export default function Home() {
 
   const [stores, setStores] = useState<Store[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
 
   useEffect(() => {
     const fetchStores = async () => {
@@ -22,11 +21,9 @@ export default function Home() {
         const lng = 77.3910
 
         const res = await API.get(`/stores/nearby?lat=${lat}&lng=${lng}`)
-
         setStores(res.data)
       } catch (err) {
         console.error(err)
-        setError("Failed to load stores")
       } finally {
         setLoading(false)
       }
@@ -35,7 +32,6 @@ export default function Home() {
     fetchStores()
   }, [])
 
-  // 🔄 LOADING STATE
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen text-xl">
@@ -44,67 +40,69 @@ export default function Home() {
     )
   }
 
-  // ❌ ERROR STATE
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen text-red-500 text-xl">
-        {error}
-      </div>
-    )
-  }
-
   return (
-    <div className="p-8 bg-gray-100 min-h-screen">
+    <div className="p-6 bg-gray-100 min-h-screen">
 
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">Nearby Stores 🛍️</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">
+          Nearby Stores 🛍️
+        </h1>
 
         <button
           onClick={() => navigate("/cart")}
-          className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg shadow"
+          className="bg-black text-white px-4 py-2 rounded-lg hover:scale-105 transition"
         >
           🛒 Cart
         </button>
       </div>
 
-      {/* EMPTY STATE */}
-      {stores.length === 0 ? (
-        <div className="text-center text-gray-500 text-lg mt-20">
-          🚫 No stores found nearby
-        </div>
-      ) : (
-        /* STORE GRID */
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {stores.map((store) => (
-            <div
-              key={store._id}
-              onClick={() => navigate(`/store/${store._id}`)}
-              className="bg-white rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer p-5"
-            >
-              {/* IMAGE */}
-              <div className="h-32 bg-gray-200 rounded-lg mb-4 flex items-center justify-center text-gray-500">
-                🏪 Store Image
-              </div>
+      {/* GRID */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
-              {/* NAME */}
-              <h2 className="text-xl font-semibold">
-                {store.storeName}
-              </h2>
+        {stores.map(store => (
 
-              {/* CATEGORY */}
-              <p className="text-gray-500">
-                {store.category}
-              </p>
+          <div
+            key={store._id}
+            onClick={() => navigate(`/store/${store._id}`)}
+            className="bg-white rounded-xl shadow-md hover:shadow-xl transition p-4 cursor-pointer"
+          >
 
-              {/* EXTRA */}
-              <p className="text-sm text-green-600 mt-2">
-                🚀 Fast Delivery
-              </p>
+            {/* IMAGE */}
+            <img
+              src="https://images.unsplash.com/photo-1606787366850-de6330128bfc"
+              className="w-full h-36 object-cover rounded-lg mb-3"
+            />
+
+            {/* NAME */}
+            <h2 className="text-lg font-semibold">
+              {store.storeName}
+            </h2>
+
+            {/* CATEGORY */}
+            <p className="text-gray-500 text-sm">
+              {store.category}
+            </p>
+
+            {/* EXTRA INFO */}
+            <div className="flex justify-between text-sm mt-2">
+
+              <span className="text-green-600">
+                ⭐ 4.3
+              </span>
+
+              <span className="text-gray-500">
+                ⏱ 20-30 min
+              </span>
+
             </div>
-          ))}
-        </div>
-      )}
+
+          </div>
+
+        ))}
+
+      </div>
+
     </div>
   )
 }

@@ -40,7 +40,9 @@ const io = new Server(server, {
       "https://local-commerce-platform.vercel.app",
       "https://delivery-dashboard-three-murex.vercel.app",
       "https://supplier-dashboard-tau.vercel.app",
-      "https://vendor-dashboard-rho.vercel.app"],
+      "https://vendor-dashboard-rho.vercel.app",
+      "http://localhost:5173"
+    ],
     methods: ["GET", "POST", "PATCH"]
   }
 });
@@ -54,7 +56,8 @@ app.use(cors({
     "https://local-commerce-platform.vercel.app",
     "https://delivery-dashboard-three-murex.vercel.app",
     "https://supplier-dashboard-tau.vercel.app",
-    "https://vendor-dashboard-rho.vercel.app"
+    "https://vendor-dashboard-rho.vercel.app",
+    "http://localhost:5173"
   ], 
   credentials: true
 }));
