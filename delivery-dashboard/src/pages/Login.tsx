@@ -1,25 +1,42 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
+import API from "../api/api"
 
 export default function Login() {
 
   const navigate = useNavigate()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const driver = localStorage.getItem("driver")
-
     if (driver) {
-      navigate("/") // ✅ redirect to dashboard
+      navigate("/")
     }
   }, [])
 
-  const handleLogin = () => {
-    localStorage.setItem("driver", JSON.stringify({
-      _id: "test-driver-123",
-      name: "Uday Driver"
-    }))
+  const handleLogin = async () => {
+    if (!email || !password) {
+      toast.error("Please enter your email and password")
+      return
+    }
 
-    navigate("/") // ✅ go to dashboard
+    setLoading(true)
+    try {
+      const res = await API.post("/driver/login", { email, password })
+      const { token, driver } = res.data
+      localStorage.setItem("driver", JSON.stringify(driver))
+      localStorage.setItem("driverToken", token)
+      toast.success(`Welcome back, ${driver.name}!`)
+      navigate("/")
+    } catch (err: any) {
+      const msg = err.response?.data?.message ?? "Login failed"
+      toast.error(msg)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -31,30 +48,29 @@ export default function Login() {
 
         <input
           placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className="w-full mb-3 p-2 border rounded"
+          type="email"
         />
 
         <input
           placeholder="Password"
           type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           className="w-full mb-3 p-2 border rounded"
         />
 
         <button
           onClick={handleLogin}
-          className="w-full bg-blue-600 text-white py-2 rounded"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-2 rounded disabled:opacity-60"
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
 
       </div>
     </div>
   )
 }
-
-
-
-// localStorage.setItem("driver", JSON.stringify({
-//   _id: "test-driver-123",
-//   name: "Uday Driver"
-// }))

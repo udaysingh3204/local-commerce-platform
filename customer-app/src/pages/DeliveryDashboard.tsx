@@ -1,13 +1,17 @@
 import { useEffect } from "react"
+import { useParams } from "react-router-dom"
 import { io } from "socket.io-client"
 
-const socket = io("http://localhost:5000")
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? "https://local-commerce-platform-production.up.railway.app"
+const socket = io(SOCKET_URL)
 
 export default function DeliveryDashboard() {
 
-  const orderId = "69cecdf18025573d8f961df9" // 🔥 replace manually for now
+  const { orderId } = useParams<{ orderId: string }>()
 
   useEffect(() => {
+    if (!orderId) return
+
     navigator.geolocation.watchPosition((pos) => {
 
       const location = {

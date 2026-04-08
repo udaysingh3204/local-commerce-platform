@@ -2,39 +2,58 @@ const express = require("express");
 const router = express.Router();
 const Driver = require("../models/Driver");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 /* REGISTER */
 router.post("/register", async (req, res) => {
-  const { name, email, password } = req.body;
+  try {
+    const { name, email, password } = req.body;
 
-  const hashed = await bcrypt.hash(password, 10);
+    const existing = await Driver.findOne({ email });
+    if (existing) {
+      return res.status(400).json({ message: "Driver already exists" });
+    }
 
-  const driver = await Driver.create({
-    name,
-    email,
-    password: hashed
-  });
+    const hashed = await bcrypt.hash(password, 10);
+    const driver = await Driver.create({ name, email, password: hashed });
 
-  res.json(driver);
+    res.status(201).json({
+      message: "Driver registered successfully",
+      driver: { _id: driver._id, name: driver.name, email: driver.email }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /* LOGIN */
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const driver = await Driver.findOne({ email });
+    const driver = await Driver.findOne({ email });
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
 
-  if (!driver) {
-    return res.status(404).json({ message: "Driver not found" });
+    const isMatch = await bcrypt.compare(password, driver.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      { id: driver._id, role: "driver" },
+      process.env.JWT_SECRET || "fallback_secret",
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      token,
+      driver: { _id: driver._id, name: driver.name, email: driver.email, isAvailable: driver.isAvailable }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-
-  const isMatch = await bcrypt.compare(password, driver.password);
-
-  if (!isMatch) {
-    return res.status(400).json({ message: "Invalid credentials" });
-  }
-
-  res.json(driver);
 });
 
 module.exports = router;

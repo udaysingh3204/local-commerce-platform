@@ -26,7 +26,7 @@ function App() {
 
 				<Route path="/track/:orderId" element={<TrackOrder />} />
 				<Route path="/checkout" element={<Checkout />} />
-				<Route path="/delivery-dashboard" element={<DeliveryDashboard />} />
+			<Route path="/delivery-dashboard/:orderId" element={<DeliveryDashboard />} />
 				<Route path="/login" element={<Login />} />
 				<Route path="/signup" element={<Signup />} />
 			</Routes>

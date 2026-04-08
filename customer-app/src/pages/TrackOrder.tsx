@@ -14,7 +14,8 @@ import { toast } from "sonner"
 import "leaflet/dist/leaflet.css"
 import "leaflet-routing-machine"
 
-const socket = io("http://localhost:5000")
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? "https://local-commerce-platform-production.up.railway.app"
+const socket = io(SOCKET_URL)
 
 /* 🚚 DRIVER ICON */
 const driverIcon = new L.Icon({
