@@ -27,7 +27,7 @@ const wholesaleRoutes = require("./routes/wholesaleRoutes");
 const inventoryRoutes = require("./routes/inventoryRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const predictionRoutes = require("./routes/predictionRoutes");
-
+const driverAuthRoutes = require("./routes/driverAuthRoutes");
 const app = express();
 const server = http.createServer(app);
 const morgan = require("morgan")
@@ -41,13 +41,41 @@ const io = new Server(server, {
       "https://delivery-dashboard-three-murex.vercel.app",
       "https://supplier-dashboard-tau.vercel.app",
       "https://vendor-dashboard-rho.vercel.app",
-      "http://localhost:5173"
+      "http://localhost:5173",
+      "http://localhost:5174"
     ],
     methods: ["GET", "POST", "PATCH"]
   }
 });
 
 app.set("io", io);
+
+// 🚀 TEST DRIVER LOCATION (SIMULATION)
+app.get("/test-location", (req, res) => {
+
+  const io = req.app.get("io");
+
+  const orderId = req.query.orderId;
+
+  if (!orderId) {
+    return res.send("❌ Missing orderId");
+  }
+
+  const location = {
+    lat: 28.5355 + Math.random() * 0.002,
+    lng: 77.3910 + Math.random() * 0.002
+  };
+
+  io.to(orderId).emit("deliveryLocationUpdate", {
+    orderId,
+    location
+  });
+
+  console.log("📡 Location sent:", location);
+
+  res.send("✅ Location sent");
+});
+
 
 /* GLOBAL MIDDLEWARE */
 
@@ -57,7 +85,8 @@ app.use(cors({
     "https://delivery-dashboard-three-murex.vercel.app",
     "https://supplier-dashboard-tau.vercel.app",
     "https://vendor-dashboard-rho.vercel.app",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "http://localhost:5174"
   ], 
   credentials: true
 }));
@@ -104,7 +133,7 @@ app.use("/api/wholesale", wholesaleRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/prediction", predictionRoutes);
-
+app.use("/api/driver", driverAuthRoutes);
 /* SOCKET EVENTS */
 io.on("connection", (socket) => {
 
@@ -131,6 +160,10 @@ io.on("connection", (socket) => {
     console.log("User disconnected:", socket.id);
   });
 
+  socket.on("driverLocationUpdate", ({ driverId, location }) => {
+  global.drivers = global.drivers || {}
+  global.drivers[driverId] = location
+})
 });
 
 /* DATABASE CONNECTION */

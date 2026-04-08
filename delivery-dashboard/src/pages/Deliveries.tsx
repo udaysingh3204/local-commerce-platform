@@ -1,111 +1,219 @@
 import { useEffect, useState } from "react"
 import API from "../api/api"
-import type { Order } from "../types/order"
 import LocationSender from "./LocationSender"
+import { useNavigate } from "react-router-dom"
+import { io } from "socket.io-client"
+
+const socket = io("http://localhost:5000")
 
 export default function Deliveries() {
 
-  const [orders, setOrders] = useState<Order[]>([])
-  const [activeOrderId, setActiveOrderId] = useState<string | null>(null)
+  const [orders, setOrders] = useState<any[]>([])
+  const [activeOrder, setActiveOrder] = useState<any>(null)
+  const [totalEarnings, setTotalEarnings] = useState(0)
 
-  const partnerId = "69b928c34a3b314e4e8d8b81"
+  const navigate = useNavigate()
 
+  // 🔐 AUTH CHECK
+  useEffect(() => {
+    const driver = localStorage.getItem("driver")
+    if (!driver) navigate("/login")
+  }, [])
+
+  // 📦 FETCH ORDERS
   const fetchOrders = async () => {
-    const res = await API.get(`/delivery/orders/${partnerId}`)
-    setOrders(res.data)
+    try {
+      const driver = JSON.parse(localStorage.getItem("driver") || "{}")
+
+      const res = driver?._id
+        ? await API.get(`/orders?driverId=${driver._id}`)
+        : await API.get("/orders")
+
+      setOrders(res.data)
+
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   useEffect(() => {
     fetchOrders()
   }, [])
 
-  const updateStatus = async (orderId: string, status: string) => {
-    await API.patch(`/orders/${orderId}/status`, { status })
+  // ✅ ACCEPT ORDER
+  const acceptOrder = async (orderId: string) => {
+    try {
+      const driver = JSON.parse(localStorage.getItem("driver") || "{}")
 
-    // 🚚 Start tracking when out_for_delivery
-    if (status === "out_for_delivery") {
-      setActiveOrderId(orderId)
+      await API.patch(`/orders/${orderId}/status`, {
+        status: "accepted",
+        driverId: driver._id
+      })
+
+      const selected = orders.find(o => o._id === orderId)
+
+      setActiveOrder(selected)
+      setOrders(prev => prev.filter(o => o._id !== orderId))
+
+      navigate(`/track/${orderId}`)
+
+    } catch (err) {
+      console.error(err)
     }
-
-    fetchOrders()
   }
 
+  // 🔄 UPDATE STATUS
+  const updateStatus = async (orderId: string, status: string) => {
+    try {
+      await API.patch(`/orders/${orderId}/status`, { status })
+
+      if (status === "delivered") {
+        const order = activeOrder
+
+        if (order) {
+          setTotalEarnings(prev => prev + order.totalAmount)
+        }
+
+        setActiveOrder(null)
+        fetchOrders()
+      }
+
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  // 🔥 NEW ORDER (REALTIME)
+  useEffect(() => {
+    socket.on("newOrder", (order) => {
+      setOrders(prev => [order, ...prev])
+    })
+
+    return () => {
+      socket.off("newOrder")
+    }
+  }, [])
+
+  // 🚚 AUTO ASSIGN HANDLER (IMPORTANT)
+  useEffect(() => {
+    socket.on("deliveryAssigned", (data: any) => {
+
+      const driver = JSON.parse(localStorage.getItem("driver") || "{}")
+
+      if (data.driverId === driver._id) {
+
+        alert("🚚 New Order Assigned!")
+
+        // Fetch latest order
+        API.get(`/orders?driverId=${driver._id}`)
+          .then(res => {
+            const latest = res.data.find((o: any) => o._id === data.orderId)
+
+            if (latest) {
+              setActiveOrder(latest)
+              navigate(`/track/${data.orderId}`)
+            }
+          })
+
+      }
+
+    })
+
+    return () => {
+      socket.off("deliveryAssigned")
+    }
+
+  }, [])
+
   return (
-    <div className="p-10 bg-gray-100 min-h-screen">
+    <div className="min-h-screen bg-gray-100 p-6">
 
-      <h1 className="text-3xl font-bold mb-6">
-        Delivery Dashboard
-      </h1>
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">🚚 Driver Dashboard</h1>
 
-      <div className="space-y-4">
+        <div className="flex gap-3">
+          <button
+            onClick={() => navigate("/earnings")}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg"
+          >
+            💰 Earnings
+          </button>
 
-        {orders.map(order => (
+          <button
+            onClick={() => {
+              localStorage.removeItem("driver")
+              navigate("/login")
+            }}
+            className="bg-red-500 text-white px-4 py-2 rounded-lg"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
 
-          <div key={order._id} className="bg-white p-6 rounded-xl shadow">
+      {/* EARNINGS */}
+      <div className="bg-white shadow-md rounded-xl p-4 mb-6">
+        <h2 className="text-lg font-semibold">💰 Today Earnings</h2>
+        <p className="text-2xl font-bold text-green-600">
+          ₹{totalEarnings}
+        </p>
+      </div>
 
-            <p className="font-bold">
-              Order #{order._id.slice(-6)}
-            </p>
+      {/* AVAILABLE ORDERS */}
+      {!activeOrder && (
+        <div className="grid md:grid-cols-2 gap-4">
 
-            {order.items.map((item, i) => (
-              <p key={i}>
-                {item.name} x {item.quantity}
-              </p>
-            ))}
-
-            <p className="mt-2">
-              Amount: ₹{order.totalAmount}
-            </p>
-
-            <p>Status: {order.status}</p>
-
-            <div className="mt-4 space-x-2">
+          {orders.map(order => (
+            <div
+              key={order._id}
+              className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition"
+            >
+              <p className="font-semibold">🧾 {order._id.slice(-6)}</p>
+              <p className="text-gray-600">₹{order.totalAmount}</p>
 
               <button
-                onClick={() => updateStatus(order._id, "accepted")}
-                className="bg-blue-500 text-white px-4 py-2 rounded"
+                onClick={() => acceptOrder(order._id)}
+                className="bg-blue-600 text-white px-3 py-1 rounded mt-2"
               >
                 Accept
               </button>
-
-              <button
-                onClick={() => updateStatus(order._id, "preparing")}
-                className="bg-yellow-500 text-white px-4 py-2 rounded"
-              >
-                Preparing
-              </button>
-
-              <button
-                onClick={() => updateStatus(order._id, "out_for_delivery")}
-                className="bg-purple-500 text-white px-4 py-2 rounded"
-              >
-                Start Delivery
-              </button>
-
-              <button
-                onClick={() => updateStatus(order._id, "delivered")}
-                className="bg-green-500 text-white px-4 py-2 rounded"
-              >
-                Delivered
-              </button>
-
             </div>
+          ))}
 
+        </div>
+      )}
+
+      {/* ACTIVE ORDER */}
+      {activeOrder && (
+        <div className="bg-white p-6 rounded-xl shadow-lg">
+
+          <h2 className="text-xl font-bold mb-3">
+            🚚 Active Order
+          </h2>
+
+          <p>Order ID: {activeOrder._id}</p>
+
+          {/* 📍 LOCATION */}
+          <LocationSender orderId={activeOrder._id} />
+
+          <div className="flex gap-3 mt-4">
+            <button
+              onClick={() => updateStatus(activeOrder._id, "picked")}
+              className="bg-yellow-500 text-white px-4 py-2 rounded"
+            >
+              📦 Picked
+            </button>
+
+            <button
+              onClick={() => updateStatus(activeOrder._id, "delivered")}
+              className="bg-green-600 text-white px-4 py-2 rounded"
+            >
+              ✅ Delivered
+            </button>
           </div>
 
-        ))}
-
-        {orders.length === 0 && (
-          <p className="text-gray-500">
-            No deliveries assigned
-          </p>
-        )}
-
-      </div>
-
-      {/* 🔥 LOCATION TRACKING */}
-      {activeOrderId && (
-        <LocationSender orderId={activeOrderId} />
+        </div>
       )}
 
     </div>

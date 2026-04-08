@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import API from "../api/api"
 import { io } from "socket.io-client"
 
-const socket = io("https://local-commerce-platform-production.up.railway.app/")
+const socket = io("http://localhost:5000")
 
 export default function Orders(){
 
