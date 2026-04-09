@@ -9,107 +9,144 @@ export default function Delivery() {
   useEffect(() => {
     Promise.all([
       API.get("/driver/all").then(res => setDrivers(res.data)),
-      API.get("/orders/all").then(res => setOrders(res.data))
+      API.get("/orders/all").then(res => setOrders(res.data)),
     ])
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
 
   const activeDeliveries = orders.filter(o => o.status === "out_for_delivery")
-  const deliveredOrders = orders.filter(o => o.status === "delivered")
+  const deliveredOrders  = orders.filter(o => o.status === "delivered")
   const availableDrivers = drivers.filter(d => d.isAvailable)
 
-  if (loading) return <div className="p-10 text-gray-500">Loading delivery data...</div>
+  const STAT_CARDS = [
+    { label: "Total Drivers",     value: drivers.length,          icon: "🚚", color: "text-violet-400",  grad: "from-violet-600 to-purple-700"  },
+    { label: "Available",         value: availableDrivers.length, icon: "✅", color: "text-emerald-400", grad: "from-emerald-500 to-teal-600"   },
+    { label: "Active Deliveries", value: activeDeliveries.length, icon: "🌀", color: "text-orange-400",  grad: "from-orange-500 to-amber-500"   },
+    { label: "Completed",         value: deliveredOrders.length,  icon: "🏁", color: "text-sky-400",     grad: "from-sky-500 to-cyan-500"       },
+  ]
 
   return (
-    <div className="p-10">
-      <h1 className="text-3xl font-bold mb-6">Delivery Management</h1>
-
-      <div className="grid grid-cols-4 gap-4 mb-8">
-        <div className="bg-white p-4 rounded-xl shadow text-center">
-          <p className="text-gray-500 text-sm">Total Drivers</p>
-          <h2 className="text-2xl font-bold">{drivers.length}</h2>
-        </div>
-        <div className="bg-white p-4 rounded-xl shadow text-center">
-          <p className="text-gray-500 text-sm">Available</p>
-          <h2 className="text-2xl font-bold text-green-600">{availableDrivers.length}</h2>
-        </div>
-        <div className="bg-white p-4 rounded-xl shadow text-center">
-          <p className="text-gray-500 text-sm">Active Deliveries</p>
-          <h2 className="text-2xl font-bold text-blue-600">{activeDeliveries.length}</h2>
-        </div>
-        <div className="bg-white p-4 rounded-xl shadow text-center">
-          <p className="text-gray-500 text-sm">Completed</p>
-          <h2 className="text-2xl font-bold text-gray-600">{deliveredOrders.length}</h2>
-        </div>
+    <div className="p-6 xl:p-8">
+      {/* Header */}
+      <div className="mb-6 ad-fade-in">
+        <h1 className="text-2xl font-black text-white">Delivery Management</h1>
+        <p className="text-slate-500 text-sm mt-1">Driver fleet and live delivery tracking</p>
       </div>
 
-      {/* Drivers Table */}
-      <div className="bg-white rounded-xl shadow overflow-hidden mb-8">
-        <h2 className="font-bold p-4 border-b">Delivery Drivers</h2>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-gray-50 text-gray-500">
-              <th className="text-left p-3">Name</th>
-              <th className="text-left p-3">Email</th>
-              <th className="text-left p-3">Status</th>
-              <th className="text-left p-3">Joined</th>
-            </tr>
-          </thead>
-          <tbody>
-            {drivers.map(d => (
-              <tr key={d._id} className="border-b hover:bg-gray-50">
-                <td className="p-3 font-medium">{d.name}</td>
-                <td className="p-3 text-gray-500">{d.email}</td>
-                <td className="p-3">
-                  <span className={`px-2 py-1 rounded text-xs ${
-                    d.isAvailable ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                  }`}>
-                    {d.isAvailable ? "Available" : "Busy"}
-                  </span>
-                </td>
-                <td className="p-3 text-gray-500">{new Date(d.createdAt).toLocaleDateString()}</td>
-              </tr>
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+        {STAT_CARDS.map((s, i) => (
+          <div
+            key={s.label}
+            className="bg-[#0d1120] border border-white/[0.05] rounded-2xl p-5 ad-count-up ad-card"
+            style={{ animationDelay: `${i * 0.08}s`, opacity: 0 }}
+          >
+            <div className={`w-10 h-10 rounded-xl bg-linear-to-br ${s.grad} flex items-center justify-center text-lg mb-4 shadow-lg`}>
+              {s.icon}
+            </div>
+            <p className="text-slate-500 text-xs font-semibold mb-1">{s.label}</p>
+            <p className={`text-3xl font-black ${s.color}`}>{s.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Driver Fleet */}
+      <div className="mb-8">
+        <h2 className="text-white font-black text-base mb-4">Delivery Fleet</h2>
+        {loading ? (
+          <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-[#0d1120] border border-white/[0.05] rounded-2xl p-5 animate-pulse">
+                <div className="w-10 h-10 bg-white/[0.04] rounded-xl mb-3" />
+                <div className="h-3 bg-white/[0.04] rounded-full w-2/3 mb-2" />
+                <div className="h-3 bg-white/[0.04] rounded-full w-1/2" />
+              </div>
             ))}
-            {drivers.length === 0 && (
-              <tr><td colSpan={4} className="p-6 text-center text-gray-400">No drivers registered</td></tr>
-            )}
-          </tbody>
-        </table>
+          </div>
+        ) : drivers.length === 0 ? (
+          <div className="bg-[#0d1120] border border-white/[0.05] rounded-2xl p-12 text-center">
+            <div className="text-4xl mb-3">🚚</div>
+            <p className="text-slate-500">No drivers registered yet</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
+            {drivers.map(d => (
+              <div key={d._id} className="bg-[#0d1120] border border-white/[0.05] rounded-2xl p-5 ad-card">
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black text-white shrink-0 ${d.isAvailable ? "bg-emerald-700" : "bg-slate-700"}`}>
+                    {d.name?.[0]?.toUpperCase() ?? "D"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-black text-sm truncate">{d.name}</p>
+                    <p className="text-slate-500 text-xs truncate">{d.email}</p>
+                  </div>
+                  <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border shrink-0
+                    ${d.isAvailable
+                      ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+                      : "text-slate-500 bg-white/[0.03] border-white/[0.05]"
+                    }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${d.isAvailable ? "bg-emerald-400" : "bg-slate-600"}`} />
+                    {d.isAvailable ? "Free" : "Busy"}
+                  </div>
+                </div>
+                <p className="text-slate-600 text-xs mt-3">
+                  Joined {new Date(d.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Active Deliveries */}
-      <div className="bg-white rounded-xl shadow overflow-hidden">
-        <h2 className="font-bold p-4 border-b">Active Deliveries</h2>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-gray-50 text-gray-500">
-              <th className="text-left p-3">Order ID</th>
-              <th className="text-left p-3">Status</th>
-              <th className="text-left p-3">Amount</th>
-              <th className="text-left p-3">Started</th>
-            </tr>
-          </thead>
-          <tbody>
-            {activeDeliveries.map(o => (
-              <tr key={o._id} className="border-b hover:bg-gray-50">
-                <td className="p-3 font-mono text-xs">#{o._id.slice(-6)}</td>
-                <td className="p-3">
-                  <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">
-                    Out for Delivery
-                  </span>
-                </td>
-                <td className="p-3">₹{o.totalAmount}</td>
-                <td className="p-3 text-gray-500">
-                  {o.deliveryStartTime ? new Date(o.deliveryStartTime).toLocaleString() : "—"}
-                </td>
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="text-white font-black text-base">Active Deliveries</h2>
+          {activeDeliveries.length > 0 && (
+            <span className="bg-orange-500/10 text-orange-400 border border-orange-500/20 text-xs font-bold px-2 py-0.5 rounded-full">
+              {activeDeliveries.length} live
+            </span>
+          )}
+        </div>
+        <div className="bg-[#0d1120] border border-white/[0.05] rounded-2xl overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/[0.05]">
+                {["Order ID", "Status", "Amount", "Started"].map(h => (
+                  <th key={h} className="text-left px-5 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">{h}</th>
+                ))}
               </tr>
-            ))}
-            {activeDeliveries.length === 0 && (
-              <tr><td colSpan={4} className="p-6 text-center text-gray-400">No active deliveries</td></tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {activeDeliveries.map(o => (
+                <tr key={o._id} className="border-b border-white/[0.03] ad-table-row">
+                  <td className="px-5 py-4 font-mono text-violet-400 text-xs font-bold">#{o._id.slice(-8).toUpperCase()}</td>
+                  <td className="px-5 py-4">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border text-orange-400 bg-orange-500/10 border-orange-500/20">
+                      <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
+                      Out for Delivery
+                    </span>
+                  </td>
+                  <td className="px-5 py-4 text-white font-black">₹{o.totalAmount}</td>
+                  <td className="px-5 py-4 text-slate-500 text-xs">
+                    {o.deliveryStartTime
+                      ? new Date(o.deliveryStartTime).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })
+                      : "—"}
+                  </td>
+                </tr>
+              ))}
+              {activeDeliveries.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-5 py-14 text-center">
+                    <div className="text-4xl mb-3">🏁</div>
+                    <p className="text-slate-500">No active deliveries right now</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )

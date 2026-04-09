@@ -1,44 +1,72 @@
 @import "tailwindcss";
 
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
+/* ── Base ── */
+*, *::before, *::after { box-sizing: border-box; }
 body {
   margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
+  background-color: #070b14;
+  font-family: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* ── Keyframes ── */
+@keyframes ad-fade-in   { from { opacity: 0; }                              to { opacity: 1; } }
+@keyframes ad-slide-in  { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes ad-count-up  { from { opacity: 0; transform: translateY(10px); }  to { opacity: 1; transform: translateY(0); } }
+@keyframes ad-spin      { to   { transform: rotate(360deg); } }
+@keyframes ad-float     {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
 }
+@keyframes ad-pulse-ring {
+  0%        { transform: scale(1);   opacity: 1; }
+  75%, 100% { transform: scale(2.5); opacity: 0; }
+}
+@keyframes ad-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* ── Utility classes ── */
+.ad-fade-in   { animation: ad-fade-in  0.5s ease forwards; }
+.ad-slide-in  { animation: ad-slide-in 0.4s ease forwards; }
+.ad-count-up  { animation: ad-count-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.ad-spin      { animation: ad-spin 0.8s linear infinite; }
+.ad-float     { animation: ad-float 4s ease-in-out infinite; }
+
+/* Shimmer gradient text (violet → cyan) */
+.ad-shimmer-text {
+  background: linear-gradient(90deg, #7c3aed 0%, #a855f7 30%, #22d3ee 60%, #7c3aed 100%);
+  background-size: 200% 100%;
+  animation: ad-shimmer 3.5s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Delay helpers ── */
+.ad-d1 { animation-delay: 0.08s; }
+.ad-d2 { animation-delay: 0.16s; }
+.ad-d3 { animation-delay: 0.24s; }
+.ad-d4 { animation-delay: 0.32s; }
+.ad-d5 { animation-delay: 0.40s; }
+.ad-d6 { animation-delay: 0.48s; }
+
+/* ── Card lift on hover ── */
+.ad-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.ad-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.12);
+}
+
+/* ── Table row hover ── */
+.ad-table-row { transition: background 0.15s ease; }
+.ad-table-row:hover { background: rgba(139, 92, 246, 0.04); }
+
+/* ── Thin scrollbar ── */
+.ad-scroll { scrollbar-width: thin; scrollbar-color: #1e1b4b transparent; }
+.ad-scroll::-webkit-scrollbar { width: 4px; }
+.ad-scroll::-webkit-scrollbar-track { background: transparent; }
+.ad-scroll::-webkit-scrollbar-thumb { background: #1e1b4b; border-radius: 2px; }
