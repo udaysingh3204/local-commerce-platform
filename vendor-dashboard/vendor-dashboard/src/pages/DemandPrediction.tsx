@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
 import API from "../api/api"
+import { useVendor } from "../context/VendorContext"
 
 export default function DemandPrediction(){
 
-const storeId="69a9e3da81a8685ca09a5b17"
+const { store } = useVendor()
+const storeId = store?._id || ""
 
 const [data,setData]=useState<any[]>([])
 

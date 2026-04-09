@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react"
 import API from "../api/api"
 import type { Product } from "../types/product"
+import { useVendor } from "../context/VendorContext"
 
 export default function Products(){
 
-const storeId = "69a9e3da81a8685ca09a5b17"
+const { store } = useVendor()
+const storeId = store?._id || ""
 
 const [products,setProducts] = useState<Product[]>([])
 const [search,setSearch] = useState("")
@@ -23,13 +25,14 @@ const [imagePreview,setImagePreview] = useState("")
 const [editingProduct,setEditingProduct] = useState<Product | null>(null)
 
 const fetchProducts = async()=>{
+if (!storeId) return
 const res = await API.get(`/products/store/${storeId}`)
 setProducts(res.data)
 }
 
 useEffect(()=>{
 fetchProducts()
-},[])
+},[storeId])
 
 const handleChange = (e:React.ChangeEvent<HTMLInputElement>)=>{
 setForm({

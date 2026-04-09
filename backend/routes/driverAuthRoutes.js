@@ -56,4 +56,14 @@ router.post("/login", async (req, res) => {
   }
 });
 
+/* GET ALL DRIVERS (admin) */
+router.get("/all", async (req, res) => {
+  try {
+    const drivers = await Driver.find().select("-password").sort({ createdAt: -1 });
+    res.json(drivers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

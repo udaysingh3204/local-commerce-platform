@@ -1,5 +1,66 @@
 const Order = require("../models/Order");
+const User = require("../models/User");
+const Store = require("../models/Store");
+const Driver = require("../models/Driver");
 const mongoose = require("mongoose");
+
+/* ================= PLATFORM DASHBOARD (ADMIN) ================= */
+
+exports.getDashboardAnalytics = async (req, res) => {
+  try {
+    const [users, stores, orders, drivers] = await Promise.all([
+      User.countDocuments(),
+      Store.countDocuments(),
+      Order.countDocuments(),
+      Driver.countDocuments()
+    ]);
+
+    const revenueData = await Order.aggregate([
+      { $match: { status: "delivered" } },
+      { $group: { _id: null, revenue: { $sum: "$totalAmount" } } }
+    ]);
+
+    const revenue = revenueData[0]?.revenue || 0;
+
+    const statusCounts = await Order.aggregate([
+      { $group: { _id: "$status", count: { $sum: 1 } } }
+    ]);
+
+    const recentOrders = await Order.find()
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean();
+
+    const dailySales = await Order.aggregate([
+      { $match: { status: "delivered" } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          revenue: { $sum: "$totalAmount" },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: -1 } },
+      { $limit: 30 }
+    ]);
+
+    res.json({
+      users,
+      stores,
+      orders,
+      drivers,
+      revenue,
+      statusCounts: statusCounts.reduce((acc, s) => {
+        acc[s._id] = s.count;
+        return acc;
+      }, {}),
+      recentOrders,
+      dailySales: dailySales.reverse()
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 exports.getStoreAnalytics = async (req, res) => {
 

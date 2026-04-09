@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react"
 import API from "../api/api"
 import { io } from "socket.io-client"
+import { useVendor } from "../context/VendorContext"
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? "https://local-commerce-platform-production.up.railway.app"
 const socket = io(SOCKET_URL)
 
 export default function Orders(){
 
-const storeId = "69a9e3da81a8685ca09a5b17"
+const { store } = useVendor()
+const storeId = store?._id || ""
 
 const [orders,setOrders] = useState<any[]>([])
 
