@@ -4,9 +4,17 @@ import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "../context/useAuth"
 import { toast } from "sonner"
 
+const PERKS = [
+  { icon: "⚡", text: "30-minute delivery, guaranteed" },
+  { icon: "🏪", text: "500+ local stores near you" },
+  { icon: "🥦", text: "Fresh produce, daily restocked" },
+  { icon: "💳", text: "Secure payments, free delivery" },
+]
+
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -29,21 +37,39 @@ export default function Login() {
   return (
     <div className="min-h-screen flex">
       {/* LEFT PANEL */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-violet-600 via-purple-600 to-pink-500 flex-col justify-between p-12 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15)_0%,transparent_60%)]" />
-        <div>
-          <span className="text-3xl font-black text-white">🛍️ LocalMart</span>
-        </div>
+      <div className="hidden lg:flex flex-col flex-1 bg-[#0d0620] p-12 relative overflow-hidden">
+        {/* Blobs */}
+        <div className="absolute -top-32 -left-24 w-96 h-96 bg-violet-700/25 rounded-full blur-3xl ca-blob" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-pink-700/20 rounded-full blur-3xl ca-blob ca-d5" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-indigo-600/15 rounded-full blur-3xl" />
+        <div className="absolute inset-0 ca-dot-grid opacity-20" />
+        {/* Content */}
         <div className="relative">
-          <h2 className="text-5xl font-black text-white leading-tight mb-4">
-            Your neighbourhood,<br/>
-            <span className="text-yellow-300">delivered.</span>
-          </h2>
-          <p className="text-violet-200 text-lg">Fresh groceries, food & more — from local stores you love.</p>
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-xl bg-linear-to-br from-violet-500 to-pink-500 flex items-center justify-center text-base shadow-lg shadow-violet-900/30">
+              🛍️
+            </div>
+            <span className="text-xl font-black text-white">LocalMart</span>
+          </div>
         </div>
-        <div className="flex gap-6 relative">
-          {["8+ Stores", "32+ Orders", "30 min avg"].map(s => (
-            <div key={s} className="bg-white/10 backdrop-blur rounded-xl px-4 py-3">
+        <div className="relative flex-1 flex flex-col justify-center">
+          <h2 className="text-5xl font-black text-white leading-[1.05] mb-4">
+            Your neighbourhood,<br />
+            <span className="ca-shimmer-text">delivered fast.</span>
+          </h2>
+          <p className="text-violet-300 mb-10">Shop from local stores you love. Get everything in 30 minutes.</p>
+          <div className="space-y-3">
+            {PERKS.map(p => (
+              <div key={p.text} className="flex items-center gap-3">
+                <span className="w-8 h-8 rounded-xl bg-white/8 flex items-center justify-center text-base shrink-0">{p.icon}</span>
+                <span className="text-violet-200 text-sm font-medium">{p.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="relative flex gap-4">
+          {["40k+ Users", "500+ Stores", "FREE Delivery"].map(s => (
+            <div key={s} className="bg-white/6 border border-white/10 rounded-xl px-4 py-3 backdrop-blur-sm">
               <p className="text-white font-bold text-sm">{s}</p>
             </div>
           ))}
@@ -53,6 +79,11 @@ export default function Login() {
       {/* RIGHT PANEL */}
       <div className="flex-1 lg:max-w-md flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-sm">
+          <div className="lg:hidden flex items-center gap-2 mb-8">
+            <div className="w-8 h-8 rounded-xl bg-linear-to-br from-violet-500 to-pink-500 flex items-center justify-center text-sm shadow-lg">🛍️</div>
+            <span className="font-black text-gray-900">LocalMart</span>
+          </div>
+
           <div className="mb-8">
             <h1 className="text-3xl font-black text-gray-900 mb-1">Welcome back 👋</h1>
             <p className="text-gray-500 text-sm">Sign in to your LocalMart account</p>
@@ -67,28 +98,42 @@ export default function Login() {
                 onChange={e => setEmail(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleLogin()}
                 placeholder="you@example.com"
-                className="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-gray-50"
+                className="mt-1.5 w-full px-4 py-3.5 rounded-xl border-2 border-gray-100 text-sm focus:outline-none focus:border-violet-400 focus:ring-0 bg-gray-50 transition"
               />
             </div>
             <div>
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleLogin()}
-                placeholder="••••••••"
-                className="mt-1 w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-gray-50"
-              />
+              <div className="relative mt-1.5">
+                <input
+                  type={showPw ? "text" : "password"}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleLogin()}
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-gray-100 text-sm focus:outline-none focus:border-violet-400 focus:ring-0 bg-gray-50 transition"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(s => !s)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 text-base"
+                >
+                  {showPw ? "🙈" : "👁️"}
+                </button>
+              </div>
             </div>
           </div>
 
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="mt-6 w-full bg-gradient-to-r from-violet-600 to-pink-500 text-white py-3.5 rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-violet-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+            className="mt-6 w-full bg-linear-to-r from-violet-600 to-pink-500 text-white py-4 rounded-xl font-black text-sm shadow-lg shadow-violet-200 hover:shadow-violet-300 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
           >
-            {loading ? "Signing in..." : "Sign In →"}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full ca-spin-slow" />
+                Signing in...
+              </span>
+            ) : "Sign In →"}
           </button>
 
           <p className="text-center text-sm text-gray-500 mt-6">
