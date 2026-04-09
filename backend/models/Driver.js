@@ -11,9 +11,13 @@ const driverSchema = new mongoose.Schema({
   location: {
     type: {
       type: String,
+      enum: ["Point"],
       default: "Point"
     },
-    coordinates: [Number]
+    coordinates: {
+      type: [Number],
+      default: [0, 0]
+    }
   }
 }, { timestamps: true });
 
