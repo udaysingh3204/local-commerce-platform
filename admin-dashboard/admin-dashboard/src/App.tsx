@@ -5,21 +5,23 @@ import Orders from "./pages/Orders"
 import Stores from "./pages/Stores"
 import Users from "./pages/Users"
 import Delivery from "./pages/Delivery"
+import Suppliers from "./pages/Suppliers"
 import Login from "./pages/Login"
 
 function ProtectedLayout() {
   const isAuth = localStorage.getItem("adminAuth") === "true"
   if (!isAuth) return <Navigate to="/login" replace />
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-[#070b14]">
       <Sidebar />
-      <div className="flex-1 bg-gray-100 min-h-screen">
+      <div className="flex-1 overflow-auto ad-scroll">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/stores" element={<Stores />} />
           <Route path="/users" element={<Users />} />
           <Route path="/delivery" element={<Delivery />} />
+          <Route path="/suppliers" element={<Suppliers />} />
         </Routes>
       </div>
     </div>
