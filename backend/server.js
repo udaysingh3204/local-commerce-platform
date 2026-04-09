@@ -35,19 +35,32 @@ const morgan = require("morgan")
 app.set("trust proxy", 1)
 
 app.use(morgan("combined"))
+
+/* CORS ORIGIN CHECKER */
+const ALLOWED_ORIGINS = [
+  "https://admin-dashboard-ruddy-eight-35.vercel.app",
+  "https://local-commerce-platform.vercel.app",
+  "https://delivery-dashboard-three-murex.vercel.app",
+  "https://supplier-dashboard-tau.vercel.app",
+  "https://vendor-dashboard-rho.vercel.app",
+];
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true; // same-origin / server-to-server
+  if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return true;
+  if (/^https:\/\/[\w-]+\.vercel\.app$/.test(origin)) return true;
+  return ALLOWED_ORIGINS.includes(origin);
+}
+
 /* SOCKET.IO */
 
 const io = new Server(server, {
   cors: {
-    origin: ["https://admin-dashboard-ruddy-eight-35.vercel.app",
-      "https://local-commerce-platform.vercel.app",
-      "https://delivery-dashboard-three-murex.vercel.app",
-      "https://supplier-dashboard-tau.vercel.app",
-      "https://vendor-dashboard-rho.vercel.app",
-      "http://localhost:5173",
-      "http://localhost:5174"
-    ],
-    methods: ["GET", "POST", "PATCH"]
+    origin: (origin, callback) => {
+      callback(null, isAllowedOrigin(origin));
+    },
+    methods: ["GET", "POST", "PATCH"],
+    credentials: true
   }
 });
 
@@ -57,15 +70,15 @@ app.set("io", io);
 /* GLOBAL MIDDLEWARE */
 
 app.use(cors({
-  origin: ["https://admin-dashboard-ruddy-eight-35.vercel.app",
-    "https://local-commerce-platform.vercel.app",
-    "https://delivery-dashboard-three-murex.vercel.app",
-    "https://supplier-dashboard-tau.vercel.app",
-    "https://vendor-dashboard-rho.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:5174"
-  ], 
-  credentials: true
+  origin: (origin, callback) => {
+    if (isAllowedOrigin(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 }));
 app.use(express.json());
 

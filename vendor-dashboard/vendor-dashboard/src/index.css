@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   line-height: 1.5;
@@ -36,3 +38,109 @@ button {
 #root {
   min-height: 100vh;
 }
+
+/* ── Custom keyframes ── */
+
+@keyframes lm-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-14px); }
+}
+
+@keyframes lm-float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-8px) rotate(1.5deg); }
+  66% { transform: translateY(-4px) rotate(-1deg); }
+}
+
+@keyframes lm-blob {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  25% { border-radius: 45% 55% 65% 35% / 40% 60% 40% 60%; }
+  50% { border-radius: 30% 70% 50% 50% / 55% 45% 55% 45%; }
+  75% { border-radius: 50% 50% 35% 65% / 65% 35% 65% 35%; }
+}
+
+@keyframes lm-shimmer {
+  0% { background-position: -400% center; }
+  100% { background-position: 400% center; }
+}
+
+@keyframes lm-glow-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+@keyframes lm-slide-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lm-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes lm-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes lm-spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes lm-ping-slow {
+  0% { transform: scale(1); opacity: 1; }
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+/* ── Animation utilities ── */
+
+.lm-float { animation: lm-float 5s ease-in-out infinite; }
+.lm-float-slow { animation: lm-float-slow 8s ease-in-out infinite; }
+.lm-blob { animation: lm-blob 10s ease-in-out infinite; }
+.lm-glow-pulse { animation: lm-glow-pulse 3s ease-in-out infinite; }
+.lm-slide-up { animation: lm-slide-up 0.7s cubic-bezier(0.22,1,0.36,1) forwards; }
+.lm-fade-in { animation: lm-fade-in 0.6s ease-out forwards; }
+.lm-marquee { animation: lm-marquee 28s linear infinite; }
+.lm-spin-slow { animation: lm-spin-slow 12s linear infinite; }
+.lm-ping-slow { animation: lm-ping-slow 2.5s ease-in-out infinite; }
+
+.lm-shimmer-text {
+  background: linear-gradient(90deg, #10b981 0%, #a78bfa 30%, #38bdf8 60%, #10b981 100%);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: lm-shimmer 4s linear infinite;
+}
+
+/* Delay helpers */
+.lm-d1 { animation-delay: 0.1s; }
+.lm-d2 { animation-delay: 0.2s; }
+.lm-d3 { animation-delay: 0.35s; }
+.lm-d4 { animation-delay: 0.5s; }
+.lm-d5 { animation-delay: 0.65s; }
+.lm-d6 { animation-delay: 0.8s; }
+.lm-d7 { animation-delay: 2s; }
+.lm-d8 { animation-delay: 4s; }
+
+/* Dot grid texture */
+.lm-dot-grid {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Gradient border card */
+.lm-card-glow {
+  position: relative;
+}
+.lm-card-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(16,185,129,0.3), rgba(167,139,250,0.2), rgba(59,130,246,0.2));
+  z-index: -1;
+}
+
