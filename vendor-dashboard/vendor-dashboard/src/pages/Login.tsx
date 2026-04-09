@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Link } from "react-router-dom"
 import { useVendor } from "../context/VendorContext"
 
 export default function Login() {
@@ -90,6 +91,13 @@ export default function Login() {
               {loading ? "Signing in..." : "Access Dashboard →"}
             </button>
           </form>
+
+          <p className="text-center text-gray-600 text-sm mt-6">
+            New vendor?{" "}
+            <Link to="/register" className="text-emerald-400 font-bold hover:text-emerald-300 transition-colors">
+              Create account →
+            </Link>
+          </p>
         </div>
       </div>
     </div>
