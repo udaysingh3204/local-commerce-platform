@@ -1,8 +1,10 @@
 import { useState } from "react"
 import API from "../api/api"
+import { useVendor } from "../context/VendorContext"
 
 export default function CreateStore() {
 
+  const { vendor } = useVendor()
   const [storeName, setStoreName] = useState("")
   const [category, setCategory] = useState("")
   const [lat, setLat] = useState("")
@@ -13,9 +15,9 @@ export default function CreateStore() {
 
     try {
 
-      const res = await API.post("/stores", {
+      await API.post("/stores", {
         storeName,
-        vendorId: "65f123456789abcdef123456", // temporary
+        vendorId: vendor?._id,
         category,
         location: {
           type: "Point",
@@ -23,9 +25,8 @@ export default function CreateStore() {
         }
       })
 
-      alert("Store Created!")
-
-      console.log(res.data)
+      alert("Store Created! Refreshing...")
+      window.location.href = "/"
 
     } catch (err) {
       console.error(err)

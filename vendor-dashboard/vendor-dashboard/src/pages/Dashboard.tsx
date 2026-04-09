@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
 import type { Analytics } from "../types/analytics";
+import { useVendor } from "../context/VendorContext";
 
 export default function Dashboard() {
 
+  const { store } = useVendor();
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
 
   useEffect(() => {
-    API.get("/analytics/store/69a9e3da81a8685ca09a5b17")
+    if (!store) return;
+    API.get(`/analytics/store/${store._id}`)
       .then(res => setAnalytics(res.data))
       .catch(err => console.log(err));
-  }, []);
+  }, [store]);
 
   return (
     <div className="p-10 bg-gray-100 min-h-screen">

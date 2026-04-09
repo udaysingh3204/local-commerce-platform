@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import API from "../api/api"
+import { useVendor } from "../context/VendorContext"
 import {
 PieChart,
 Pie,
@@ -15,7 +16,8 @@ ResponsiveContainer
 
 export default function Analytics(){
 
-const storeId="69a9e3da81a8685ca09a5b17"
+const { store } = useVendor()
+const storeId = store?._id || ""
 
 const [data,setData]=useState<any>(null)
 

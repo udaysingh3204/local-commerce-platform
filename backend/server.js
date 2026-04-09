@@ -53,32 +53,6 @@ const io = new Server(server, {
 
 app.set("io", io);
 
-// 🚀 TEST DRIVER LOCATION (SIMULATION)
-app.get("/test-location", (req, res) => {
-
-  const io = req.app.get("io");
-
-  const orderId = req.query.orderId;
-
-  if (!orderId) {
-    return res.send("❌ Missing orderId");
-  }
-
-  const location = {
-    lat: 28.5355 + Math.random() * 0.002,
-    lng: 77.3910 + Math.random() * 0.002
-  };
-
-  io.to(orderId).emit("deliveryLocationUpdate", {
-    orderId,
-    location
-  });
-
-  console.log("📡 Location sent:", location);
-
-  res.send("✅ Location sent");
-});
-
 
 /* GLOBAL MIDDLEWARE */
 

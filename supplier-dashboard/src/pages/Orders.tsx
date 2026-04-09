@@ -1,25 +1,21 @@
 import { useEffect, useState } from "react"
 import API from "../api/api"
+import { useSupplier } from "../context/SupplierContext"
 
 export default function Orders() {
 
   const [orders, setOrders] = useState<any[]>([])
-
-  const supplierId = "69aa0785019e9e19966f1aa2"
+  const { supplier } = useSupplier()
 
   const fetchOrders = async () => {
-
-    const res = await API.get(`/wholesale/orders/${supplierId}`)
-
+    if (!supplier) return
+    const res = await API.get(`/wholesale/orders/${supplier._id}`)
     setOrders(res.data)
-
   }
 
   useEffect(() => {
-
     fetchOrders()
-
-  }, [])
+  }, [supplier])
 
   return (
 

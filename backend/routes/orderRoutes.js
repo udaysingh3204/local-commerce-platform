@@ -23,6 +23,16 @@ router.get("/customer/:customerId", getOrdersByCustomer);
 /* GET ALL ORDERS (DRIVER DASHBOARD) */
 router.get("/", getAllOrders); // ✅ use controller
 
+/* GET ALL ORDERS (ADMIN - unfiltered) */
+router.get("/all", async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 /* UPDATE ORDER STATUS */
 router.patch("/:id/status", updateOrderStatus);
 
