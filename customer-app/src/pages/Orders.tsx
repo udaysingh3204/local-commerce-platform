@@ -36,15 +36,17 @@ export default function Orders() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50 to-pink-50">
-      <div className="max-w-3xl mx-auto px-4 py-10">
-        <div className="mb-8">
-          <Link to="/" className="text-gray-400 hover:text-gray-700 text-sm flex items-center gap-1 mb-3">
-            ← Home
-          </Link>
-          <h1 className="text-3xl font-black text-gray-900">📦 My Orders</h1>
-          <p className="text-gray-500 text-sm mt-1">{orders.length} order{orders.length !== 1 ? "s" : ""} total</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-linear-to-r from-violet-900 via-violet-800 to-fuchsia-900 text-white px-6 py-8">
+        <div className="max-w-3xl mx-auto">
+          <Link to="/" className="text-violet-300 hover:text-white text-sm flex items-center gap-1 mb-4 transition">← Home</Link>
+          <h1 className="text-3xl font-black">My Orders</h1>
+          <p className="text-violet-300 text-sm mt-1">{loading ? "Loading..." : `${orders.length} order${orders.length !== 1 ? "s" : ""} total`}</p>
         </div>
+      </div>
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="mb-4" />
 
         {loading ? (
           <div className="space-y-4">
@@ -63,7 +65,7 @@ export default function Orders() {
             <p className="text-gray-400 mb-6">Start shopping from local stores!</p>
             <button
               onClick={() => navigate("/")}
-              className="bg-gradient-to-r from-violet-600 to-pink-500 text-white px-8 py-3 rounded-xl font-bold hover:shadow-lg hover:shadow-violet-200 transition-all"
+              className="bg-linear-to-r from-violet-600 to-pink-500 text-white px-8 py-3 rounded-xl font-bold hover:shadow-lg hover:shadow-violet-200 transition-all"
             >
               Browse Stores
             </button>
@@ -125,7 +127,7 @@ export default function Orders() {
                                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all
                                   ${done
                                     ? current
-                                      ? "bg-gradient-to-br from-violet-600 to-pink-500 text-white shadow-md shadow-violet-200 scale-110"
+                                      ? "bg-linear-to-br from-violet-600 to-pink-500 text-white shadow-md shadow-violet-200 scale-110"
                                       : "bg-violet-600 text-white"
                                     : "bg-gray-100 text-gray-400"
                                   }`}

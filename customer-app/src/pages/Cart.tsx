@@ -15,7 +15,7 @@ export default function Cart() {
   const total = cart.reduce((s: number, i: CartItem) => s + i.price * i.quantity, 0)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50 to-pink-50">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-violet-50 to-pink-50">
       <div className="max-w-2xl mx-auto px-4 py-10">
         <div className="mb-8">
           <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-gray-700 text-sm mb-3 flex items-center gap-1">
@@ -32,7 +32,7 @@ export default function Cart() {
             <p className="text-gray-400 mb-6">Add items from a nearby store!</p>
             <button
               onClick={() => navigate("/")}
-              className="bg-gradient-to-r from-violet-600 to-pink-500 text-white px-8 py-3 rounded-xl font-bold hover:shadow-lg hover:shadow-violet-200 transition-all"
+              className="bg-linear-to-r from-violet-600 to-pink-500 text-white px-8 py-3 rounded-xl font-bold hover:shadow-lg hover:shadow-violet-200 transition-all"
             >
               Browse Stores
             </button>
@@ -44,7 +44,7 @@ export default function Cart() {
                 key={item._id}
                 className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center gap-4 hover:shadow-md transition-all"
               >
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-100 to-pink-100 flex items-center justify-center text-2xl flex-shrink-0">
+                <div className="w-14 h-14 rounded-xl bg-linear-to-br from-violet-100 to-pink-100 flex items-center justify-center text-2xl shrink-0">
                   📦
                 </div>
                 <div className="flex-1 min-w-0">
@@ -96,7 +96,7 @@ export default function Cart() {
 
             <button
               onClick={() => navigate("/checkout")}
-              className="w-full bg-gradient-to-r from-violet-600 to-pink-500 text-white py-4 rounded-2xl font-black text-base hover:shadow-xl hover:shadow-violet-200 transition-all hover:-translate-y-0.5 active:translate-y-0"
+              className="w-full bg-linear-to-r from-violet-600 to-pink-500 text-white py-4 rounded-2xl font-black text-base hover:shadow-xl hover:shadow-violet-200 transition-all hover:-translate-y-0.5 active:translate-y-0"
             >
               Checkout — ₹{total} →
             </button>
