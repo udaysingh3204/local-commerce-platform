@@ -1,4 +1,4 @@
-import { BrowserRouter,Routes,Route } from "react-router-dom"
+import { Routes, Route } from "react-router-dom"
 
 import Home from "./pages/Home"
 import StorePage from "./pages/StorePage"
@@ -6,33 +6,34 @@ import Cart from "./pages/Cart"
 import TrackOrder from "./pages/TrackOrder"
 import Checkout from "./pages/Checkout"
 import { CartProvider } from "./context/CartContext"
+import DeliveryDashboard from "./pages/DeliveryDashboard"
+import Login from "./pages/Login"
+import Signup from "./pages/Signup"
 
-function App(){
+function App() {
 
-return(
+	return (
 
-<CartProvider>
+		<CartProvider>
 
-<BrowserRouter>
+			<Routes>
 
-<Routes>
+				<Route path="/" element={<Home />} />
 
-<Route path="/" element={<Home/>}/>
+				<Route path="/store/:storeId" element={<StorePage />} />
 
-<Route path="/store/:storeId" element={<StorePage/>}/>
+				<Route path="/cart" element={<Cart />} />
 
-<Route path="/cart" element={<Cart/>}/>
+				<Route path="/track/:orderId" element={<TrackOrder />} />
+				<Route path="/checkout" element={<Checkout />} />
+			<Route path="/delivery-dashboard/:orderId" element={<DeliveryDashboard />} />
+				<Route path="/login" element={<Login />} />
+				<Route path="/signup" element={<Signup />} />
+			</Routes>
 
-<Route path="/track/:orderId" element={<TrackOrder/>}/>
-<Route path="/checkout" element={<Checkout/>}/>
-</Routes>
+		</CartProvider>
 
-</BrowserRouter>
-
-</CartProvider>
-
-)
-
+	)
 }
 
 export default App

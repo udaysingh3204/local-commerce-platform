@@ -1,11 +1,14 @@
 const express = require("express");
 const router = express.Router();
 
+const Order = require("../models/Order"); // ✅ add this
+
 const {
   createOrder,
   getOrdersByStore,
   getOrdersByCustomer,
-  updateOrderStatus
+  updateOrderStatus,
+  getAllOrders // ✅ add this
 } = require("../controllers/orderController");
 
 /* CREATE ORDER */
@@ -16,6 +19,9 @@ router.get("/store/:storeId", getOrdersByStore);
 
 /* CUSTOMER ORDERS */
 router.get("/customer/:customerId", getOrdersByCustomer);
+
+/* GET ALL ORDERS (DRIVER DASHBOARD) */
+router.get("/", getAllOrders); // ✅ use controller
 
 /* UPDATE ORDER STATUS */
 router.patch("/:id/status", updateOrderStatus);

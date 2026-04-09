@@ -1,45 +1,50 @@
 import { useEffect } from "react"
 import { io } from "socket.io-client"
 
-const socket = io("https://local-commerce-platform-production.up.railway.app")
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? "https://local-commerce-platform-production.up.railway.app"
+const socket = io(SOCKET_URL)
 
-type Props = {
-  orderId: string
-}
-
-export default function LocationSender({ orderId }: Props) {
+export default function LocationSender({ orderId }: any) {
 
   useEffect(() => {
 
     if (!orderId) return
 
-    const watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords
+    const interval = setInterval(() => {
 
-        console.log("Sending location:", latitude, longitude)
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
 
-        socket.emit("deliveryLocationUpdate", {
-          orderId,
-          location: {
-            lat: latitude,
-            lng: longitude
+          const location = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
           }
-        })
-      },
-      (err) => {
-        console.error("Location error:", err)
-      },
-      {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 5000
-      }
-    )
 
-    return () => navigator.geolocation.clearWatch(watchId)
+          socket.emit("deliveryLocationUpdate", {
+            orderId,
+            location
+          })
+
+        },
+        () => {
+          console.log("Location permission denied")
+
+          // fallback (fake movement)
+          socket.emit("deliveryLocationUpdate", {
+            orderId,
+            location: {
+              lat: 28.5355 + Math.random() * 0.01,
+              lng: 77.3910 + Math.random() * 0.01
+            }
+          })
+        }
+      )
+
+    }, 3000)
+
+    return () => clearInterval(interval)
 
   }, [orderId])
 
-  return null
+  return <p>📡 Sending live location...</p>
 }
