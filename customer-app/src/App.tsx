@@ -9,6 +9,7 @@ import { CartProvider } from "./context/CartContext"
 import DeliveryDashboard from "./pages/DeliveryDashboard"
 import Login from "./pages/Login"
 import Signup from "./pages/Signup"
+import Orders from "./pages/Orders"
 import Navbar from "./components/Navbar"
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
 
 				<Route path="/track/:orderId" element={<TrackOrder />} />
 				<Route path="/checkout" element={<Checkout />} />
+				<Route path="/orders" element={<Orders />} />
 			<Route path="/delivery-dashboard/:orderId" element={<DeliveryDashboard />} />
 				<Route path="/login" element={<Login />} />
 				<Route path="/signup" element={<Signup />} />
