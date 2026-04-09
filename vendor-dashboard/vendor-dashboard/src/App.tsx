@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { Toaster } from "sonner"
 import Layout from "./components/Layout"
 import { VendorProvider, useVendor } from "./context/VendorContext"
 
@@ -36,6 +37,7 @@ function App() {
     <BrowserRouter>
       <VendorProvider>
         <AppRoutes />
+        <Toaster position="top-right" richColors theme="dark" />
       </VendorProvider>
     </BrowserRouter>
   )
