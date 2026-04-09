@@ -1,4 +1,4 @@
-const User = require("../models/User")
+const Driver = require("../models/Driver")
 const Order = require("../models/Order")
 
 /* DISTANCE CALCULATION (Haversine) */
@@ -44,7 +44,7 @@ try{
 
 const storeLocation = order.storeLocation
 
-if(!storeLocation){
+if(!storeLocation || !storeLocation.coordinates || storeLocation.coordinates.length !== 2){
 return null
 }
 
@@ -52,8 +52,7 @@ const [storeLng,storeLat] = storeLocation.coordinates
 
 /* FIND AVAILABLE DELIVERY PARTNERS */
 
-const partners = await User.find({
-role:"delivery",
+const partners = await Driver.find({
 isAvailable:true,
 location:{
 $near:{
@@ -87,7 +86,7 @@ lng
 
 const activeOrders = await Order.countDocuments({
 deliveryPartnerId:driver._id,
-status:{ $nin:["delivered"] }
+status:{ $nin:["delivered", "cancelled"] }
 })
 
 /* DRIVER SCORE */
@@ -106,18 +105,6 @@ bestDriver = driver
 if(!bestDriver){
 return null
 }
-
-/* ASSIGN DRIVER */
-
-await Order.findByIdAndUpdate(
-order._id,
-{ deliveryPartnerId:bestDriver._id }
-)
-
-await User.findByIdAndUpdate(
-bestDriver._id,
-{ isAvailable:false }
-)
 
 /* ETA CALCULATION */
 

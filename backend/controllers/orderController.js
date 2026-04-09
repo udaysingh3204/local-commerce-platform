@@ -2,6 +2,7 @@ const Order = require("../models/Order");
 const Product = require("../models/Product");
 const Notification = require("../models/Notification");
 const Store = require("../models/Store");
+const Driver = require("../models/Driver");
 
 const { assignNearestDriver } = require("../services/dispatchService");
 
@@ -57,17 +58,24 @@ exports.createOrder = async (req, res) => {
     });
 
     // 🚚 Assign driver
-    const driver = await assignNearestDriver(storeLocation);
+    const assignment = await assignNearestDriver(order);
 
-    if (driver) {
-      order.deliveryPartnerId = driver._id;
+    if (assignment) {
+      order.deliveryPartnerId = assignment.driver._id;
+      order.estimatedDeliveryTime = assignment.eta;
       await order.save();
+
+      await Driver.findByIdAndUpdate(
+        assignment.driver._id,
+        { isAvailable: false }
+      );
 
       const io = req.app.get("io");
 
-      io.to(order._id.toString()).emit("deliveryAssigned", {
+      io.emit("deliveryAssigned", {
         orderId: order._id,
-        driverId: driver._id
+        driverId: assignment.driver._id,
+        eta: assignment.eta
       });
     }
 
@@ -97,10 +105,19 @@ exports.getAllOrders = async (req, res) => {
 
     if (driverId) {
       // 👇 only assigned orders
-      orders = await Order.find({ deliveryPartnerId: driverId })
+      orders = await Order.find({
+        deliveryPartnerId: driverId,
+        status: { $ne: "delivered" }
+      })
     } else {
       // 👇 available orders
-      orders = await Order.find({ status: "pending" })
+      orders = await Order.find({
+        status: "pending",
+        $or: [
+          { deliveryPartnerId: { $exists: false } },
+          { deliveryPartnerId: null }
+        ]
+      })
     }
 
     res.json(orders)
@@ -144,11 +161,39 @@ exports.getOrdersByCustomer = async (req, res) => {
 
 exports.updateOrderStatus = async (req, res) => {
   try {
+    const { status, driverId } = req.body;
+
+    const update = { status };
+
+    if (driverId) {
+      update.deliveryPartnerId = driverId;
+    }
+
+    if (status === "out_for_delivery") {
+      update.deliveryStartTime = new Date();
+    }
+
+    if (status === "delivered") {
+      update.deliveryEndTime = new Date();
+    }
+
     const order = await Order.findByIdAndUpdate(
       req.params.id,
-      { status: req.body.status },
+      update,
       { returnDocument: "after" } // ✅ FIXED
     );
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (status === "accepted" && driverId) {
+      await Driver.findByIdAndUpdate(driverId, { isAvailable: false });
+    }
+
+    if (status === "delivered" && order.deliveryPartnerId) {
+      await Driver.findByIdAndUpdate(order.deliveryPartnerId, { isAvailable: true });
+    }
 
     const io = req.app.get("io");
 
@@ -157,9 +202,10 @@ exports.updateOrderStatus = async (req, res) => {
       status: order.status
     });
 
-    if (req.body.status === "accepted") {
+    if (status === "accepted") {
       io.emit("orderAccepted", {
-        orderId: order._id
+        orderId: order._id,
+        driverId: order.deliveryPartnerId
       });
     }
 
