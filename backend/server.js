@@ -31,6 +31,9 @@ const driverAuthRoutes = require("./routes/driverAuthRoutes");
 const app = express();
 const server = http.createServer(app);
 const morgan = require("morgan")
+
+app.set("trust proxy", 1)
+
 app.use(morgan("combined"))
 /* SOCKET.IO */
 
