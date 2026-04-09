@@ -16,7 +16,7 @@ const orderSchema = new mongoose.Schema({
 
   deliveryPartnerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
+    ref: "Driver"
   },
 
   /* ITEMS */

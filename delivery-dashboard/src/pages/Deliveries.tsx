@@ -53,7 +53,7 @@ export default function Deliveries() {
 
       const selected = orders.find(o => o._id === orderId)
 
-      setActiveOrder(selected)
+      setActiveOrder(selected ? { ...selected, status: "accepted", deliveryPartnerId: driver._id } : null)
       setOrders(prev => prev.filter(o => o._id !== orderId))
 
       navigate(`/track/${orderId}`)
@@ -87,6 +87,8 @@ export default function Deliveries() {
   // 🔥 NEW ORDER (REALTIME)
   useEffect(() => {
     socket.on("newOrder", (order) => {
+      if (order.deliveryPartnerId) return
+
       setOrders(prev => [order, ...prev])
     })
 
@@ -200,10 +202,10 @@ export default function Deliveries() {
 
           <div className="flex gap-3 mt-4">
             <button
-              onClick={() => updateStatus(activeOrder._id, "picked")}
+              onClick={() => updateStatus(activeOrder._id, "out_for_delivery")}
               className="bg-yellow-500 text-white px-4 py-2 rounded"
             >
-              📦 Picked
+              📦 Start Delivery
             </button>
 
             <button
