@@ -4,19 +4,14 @@ import { Outlet } from "react-router-dom"
 
 export default function Layout() {
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-
+    <div className="flex h-screen bg-gray-950 overflow-hidden">
       <Sidebar />
-
-      <div style={{ flex: 1 }}>
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <Navbar />
-
-        <div style={{ padding: "20px" }}>
+        <main className="flex-1 overflow-y-auto p-6 bg-gray-950">
           <Outlet />
-        </div>
-
+        </main>
       </div>
-
     </div>
   )
 }
