@@ -1,5 +1,18 @@
 const Driver = require("../models/Driver")
 const Order = require("../models/Order")
+const { getRouteMetrics, hasRoutingKey } = require("./routingService")
+
+function getDispatchRadiusMeters(){
+
+const configured = Number(process.env.DISPATCH_MAX_DISTANCE_METERS)
+
+if(Number.isFinite(configured) && configured > 0){
+return configured
+}
+
+return 10000
+
+}
 
 /* DISTANCE CALCULATION (Haversine) */
 
@@ -35,43 +48,39 @@ return Math.round(time)
 
 }
 
+async function getRankedDriversForOrder(order, options = {}){
 
-/* SMART DRIVER ASSIGNMENT */
-
-exports.assignNearestDriver = async(order)=>{
-
-try{
+const { maxDistance = getDispatchRadiusMeters(), limit = 3 } = options
 
 const storeLocation = order.storeLocation
 
 if(!storeLocation || !storeLocation.coordinates || storeLocation.coordinates.length !== 2){
-return null
+return []
 }
 
 const [storeLng,storeLat] = storeLocation.coordinates
-
-/* FIND AVAILABLE DELIVERY PARTNERS */
 
 const partners = await Driver.find({
 isAvailable:true,
 location:{
 $near:{
 $geometry:storeLocation,
-$maxDistance:5000
+$maxDistance:maxDistance
 }
 }
 })
 
 if(partners.length === 0){
-return null
+return []
 }
 
-/* LOAD BALANCING */
-
-let bestDriver = null
-let bestScore = Infinity
+const rankedDrivers = []
 
 for(const driver of partners){
+
+if(!driver.location || !driver.location.coordinates || driver.location.coordinates.length !== 2){
+continue
+}
 
 const [lng,lat] = driver.location.coordinates
 
@@ -82,46 +91,84 @@ lat,
 lng
 )
 
-/* CHECK DRIVER ACTIVE ORDERS */
-
 const activeOrders = await Order.countDocuments({
 deliveryPartnerId:driver._id,
 status:{ $nin:["delivered", "cancelled"] }
 })
 
-/* DRIVER SCORE */
-
 const score = distance + (activeOrders*2)
 
-if(score < bestScore){
-
-bestScore = score
-bestDriver = driver
+rankedDrivers.push({
+driver,
+distanceKm:Number(distance.toFixed(2)),
+activeOrders,
+score:Number(score.toFixed(2)),
+eta:estimateETA(distance),
+routePath:[],
+source:"local"
+})
 
 }
 
+const rankedSubset = rankedDrivers
+.sort((left,right)=>left.score-right.score)
+.slice(0,limit)
+
+if(!hasRoutingKey()){
+return rankedSubset
 }
 
-if(!bestDriver){
+await Promise.all(rankedSubset.map(async(entry)=>{
+try{
+const driverCoordinates = entry.driver.location?.coordinates
+
+if(!driverCoordinates || driverCoordinates.length !== 2){
+return
+}
+
+const [driverLng,driverLat] = driverCoordinates
+
+const routeMetrics = await getRouteMetrics({
+from:{ lat:driverLat, lng:driverLng },
+to:{ lat:storeLat, lng:storeLng }
+})
+
+if(routeMetrics){
+entry.distanceKm = routeMetrics.distanceKm
+entry.eta = routeMetrics.eta
+entry.routePath = routeMetrics.routePath
+entry.source = routeMetrics.source
+}
+}catch(err){
+console.log("Routing fallback", err.message)
+}
+}))
+
+return rankedSubset
+
+}
+
+
+/* SMART DRIVER ASSIGNMENT */
+
+exports.assignNearestDriver = async(order)=>{
+
+try{
+
+const rankedDrivers = await getRankedDriversForOrder(order, { limit: 1 })
+
+if(rankedDrivers.length === 0){
 return null
 }
 
-/* ETA CALCULATION */
-
-const [driverLng,driverLat] = bestDriver.location.coordinates
-
-const distance = calculateDistance(
-storeLat,
-storeLng,
-driverLat,
-driverLng
-)
-
-const eta = estimateETA(distance)
+const bestMatch = rankedDrivers[0]
 
 return {
-driver:bestDriver,
-eta
+driver:bestMatch.driver,
+eta:bestMatch.eta,
+distanceKm:bestMatch.distanceKm,
+activeOrders:bestMatch.activeOrders,
+score:bestMatch.score
 }
 
 }catch(err){
@@ -133,3 +180,5 @@ return null
 }
 
 }
+
+exports.getRankedDriversForOrder = getRankedDriversForOrder

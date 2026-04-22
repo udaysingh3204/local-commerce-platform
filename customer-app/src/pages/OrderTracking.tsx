@@ -1,9 +1,9 @@
 import { MapContainer, TileLayer, Marker } from "react-leaflet"
 import { useEffect, useState } from "react"
 import { io } from "socket.io-client"
+import { BACKEND_ORIGIN } from "../api/api"
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? "https://local-commerce-platform-production.up.railway.app"
-const socket = io(SOCKET_URL)
+const socket = io(BACKEND_ORIGIN)
 
 export default function OrderTracking(){
 

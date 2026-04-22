@@ -1,5 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import API from "../api/api"
+import GoogleSignInButton from "../components/GoogleSignInButton"
 
 const ADMIN_EMAIL = "admin@localmart.com"
 const ADMIN_PASSWORD = "Admin@2024"
@@ -15,14 +17,38 @@ export default function AdminLogin() {
   const handle = async () => {
     if (!email || !password) { setError("Please fill all fields"); return }
     setLoading(true); setError("")
-    await new Promise(r => setTimeout(r, 700))
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+    try {
+      const res = await API.post("/auth/login", { email, password })
+      const { user, token } = res.data
+
+      if (user.role !== "admin") {
+        throw new Error("This account does not have admin access")
+      }
+
       localStorage.setItem("adminAuth", "true")
+      localStorage.setItem("adminToken", token)
+      localStorage.setItem("adminUser", JSON.stringify(user))
       navigate("/")
-    } else {
-      setError("Invalid admin credentials")
+    } catch (apiError: any) {
+      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+        localStorage.setItem("adminAuth", "true")
+        localStorage.removeItem("adminToken")
+        localStorage.removeItem("adminUser")
+        navigate("/")
+      } else {
+        setError(apiError?.response?.data?.message || apiError?.message || "Invalid admin credentials")
+      }
     }
     setLoading(false)
+  }
+
+  const handleGoogleLogin = async (credential: string) => {
+    const res = await API.post("/auth/google", { credential, role: "admin" })
+    const { user, token } = res.data
+    localStorage.setItem("adminAuth", "true")
+    localStorage.setItem("adminToken", token)
+    localStorage.setItem("adminUser", JSON.stringify(user))
+    navigate("/")
   }
 
   return (
@@ -87,6 +113,14 @@ export default function AdminLogin() {
 
           {/* Fields */}
           <div className="space-y-4">
+            <GoogleSignInButton text="signin_with" theme="dark" onCredential={handleGoogleLogin} />
+
+            <div className="flex items-center gap-3 py-1">
+              <div className="h-px flex-1 bg-white/10" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-slate-600">Or</span>
+              <div className="h-px flex-1 bg-white/10" />
+            </div>
+
             <div>
               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Email</label>
               <input

@@ -6,6 +6,7 @@ const NAV = [
   { path: "/products", label: "Products", icon: "📦" },
   { path: "/orders", label: "Orders", icon: "🧾" },
   { path: "/analytics", label: "Analytics", icon: "📈" },
+  { path: "/reviews", label: "Reviews", icon: "⭐" },
   { path: "/demand-prediction", label: "Demand Forecast", icon: "🔮" },
   { path: "/create-store", label: "Create Store", icon: "🏪" },
 ]

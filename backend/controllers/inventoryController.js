@@ -1,5 +1,6 @@
 const { predictDemand } = require("../services/demandPrediction")
 const Product = require("../models/Product")
+const mongoose = require("mongoose")
 
 exports.getDemandPrediction = async (req,res)=>{
 
@@ -11,13 +12,13 @@ exports.getDemandPrediction = async (req,res)=>{
 
     const suggestions = []
 
-    for(const productId in demand){
+    for(const [productId, predicted] of demand){
+
+      if (!mongoose.Types.ObjectId.isValid(productId)) continue
 
       const product = await Product.findById(productId)
 
       if(!product) continue
-
-      const predicted = demand[productId]
 
       if(product.stock < predicted){
 

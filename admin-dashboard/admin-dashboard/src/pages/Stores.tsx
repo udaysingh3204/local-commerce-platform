@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useSearchParams } from "react-router-dom"
 import API from "../api/api"
 
 const CAT_ICON: Record<string, string>  = { grocery:"🥦", food:"🍔", bakery:"🥐", pharmacy:"💊", electronics:"⚡", fashion:"👗", stationery:"📚" }
@@ -13,9 +14,11 @@ const CAT_GRAD: Record<string, string>  = {
 }
 
 export default function Stores() {
+  const [searchParams] = useSearchParams()
   const [stores, setStores] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
+  const highlightedStoreId = searchParams.get("highlight")
 
   useEffect(() => {
     API.get("/stores")
@@ -25,9 +28,15 @@ export default function Stores() {
   }, [])
 
   const categories = new Set(stores.map(s => s.category).filter(Boolean))
-  const filtered = stores.filter(s =>
-    !search || s.storeName?.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = useMemo(() => {
+    const base = stores.filter(s => !search || s.storeName?.toLowerCase().includes(search.toLowerCase()))
+    if (!highlightedStoreId) return base
+    return [...base].sort((left, right) => {
+      if (left._id === highlightedStoreId) return -1
+      if (right._id === highlightedStoreId) return 1
+      return 0
+    })
+  }, [highlightedStoreId, search, stores])
 
   return (
     <div className="p-6 xl:p-8">
@@ -43,10 +52,17 @@ export default function Stores() {
             placeholder="Search stores..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="pl-9 pr-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-white text-sm placeholder-slate-600 focus:outline-none focus:border-violet-500/60 w-52 transition"
+            className="pl-9 pr-4 py-2.5 rounded-xl bg-white/4 border border-white/7 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-violet-500/60 w-52 transition"
           />
         </div>
       </div>
+
+      {highlightedStoreId && (
+        <div className="mb-5 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3">
+          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-300">Recommended Store</p>
+          <p className="mt-1 text-sm text-slate-300">The ops briefing highlighted a store that is currently outperforming the rest of the network.</p>
+        </div>
+      )}
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-4 mb-7">
@@ -55,7 +71,7 @@ export default function Stores() {
           { label: "Categories",     value: categories.size,                                         icon: "📂", color: "text-emerald-400" },
           { label: "With Location",  value: stores.filter(s => s.location?.coordinates).length,      icon: "📍", color: "text-amber-400"   },
         ].map(s => (
-          <div key={s.label} className="bg-[#0d1120] border border-white/[0.05] rounded-2xl p-5 flex items-center gap-4">
+          <div key={s.label} className="bg-[#0d1120] border border-white/5 rounded-2xl p-5 flex items-center gap-4">
             <span className="text-3xl">{s.icon}</span>
             <div>
               <p className="text-slate-500 text-xs font-semibold">{s.label}</p>
@@ -69,11 +85,11 @@ export default function Stores() {
       {loading ? (
         <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-[#0d1120] border border-white/[0.05] rounded-2xl overflow-hidden">
-              <div className="h-24 bg-white/[0.04] animate-pulse" />
+            <div key={i} className="bg-[#0d1120] border border-white/5 rounded-2xl overflow-hidden">
+              <div className="h-24 bg-white/4 animate-pulse" />
               <div className="p-4 space-y-2">
-                <div className="h-3 bg-white/[0.04] rounded-full w-2/3 animate-pulse" />
-                <div className="h-3 bg-white/[0.04] rounded-full w-1/3 animate-pulse" />
+                <div className="h-3 bg-white/4 rounded-full w-2/3 animate-pulse" />
+                <div className="h-3 bg-white/4 rounded-full w-1/3 animate-pulse" />
               </div>
             </div>
           ))}
@@ -84,14 +100,15 @@ export default function Stores() {
             const cat  = store.category?.toLowerCase() ?? ""
             const icon = CAT_ICON[cat] ?? "🏪"
             const grad = CAT_GRAD[cat] ?? "from-violet-500 to-purple-600"
+            const isHighlighted = store._id === highlightedStoreId
             return (
-              <div key={store._id} className="bg-[#0d1120] border border-white/[0.05] rounded-2xl overflow-hidden ad-card">
+              <div key={store._id} className={`bg-[#0d1120] border rounded-2xl overflow-hidden ad-card ${isHighlighted ? "border-emerald-400/40 ring-1 ring-emerald-400/30" : "border-white/5"}`}>
                 {/* Banner */}
                 <div className={`h-20 bg-linear-to-br ${grad} flex items-center justify-center relative`}>
                   <span className="text-5xl">{icon}</span>
                   <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/30 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                     <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
-                    Active
+                    {isHighlighted ? "Top Signal" : "Active"}
                   </div>
                 </div>
                 {/* Info */}

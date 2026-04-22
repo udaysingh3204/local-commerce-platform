@@ -1,41 +1,68 @@
+import { lazy, Suspense } from "react"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { Toaster } from "sonner"
-import Layout from "./components/Layout"
 import { VendorProvider, useVendor } from "./context/VendorContext"
 
-import Dashboard from "./pages/Dashboard"
-import CreateStore from "./pages/CreateStore"
-import Products from "./pages/Products"
-import Orders from "./pages/Orders"
-import Analytics from "./pages/Analytics"
-import DemandPrediction from "./pages/DemandPrediction"
-import Login from "./pages/Login"
-import Register from "./pages/Register"
-import Landing from "./pages/Landing"
+const Layout = lazy(() => import("./components/Layout"))
+const Dashboard = lazy(() => import("./pages/Dashboard"))
+const CreateStore = lazy(() => import("./pages/CreateStore"))
+const Products = lazy(() => import("./pages/Products"))
+const Orders = lazy(() => import("./pages/Orders"))
+const Analytics = lazy(() => import("./pages/Analytics"))
+const DemandPrediction = lazy(() => import("./pages/DemandPrediction"))
+const Reviews = lazy(() => import("./pages/Reviews"))
+const Login = lazy(() => import("./pages/Login"))
+const Register = lazy(() => import("./pages/Register"))
+const Landing = lazy(() => import("./pages/Landing"))
+
+function RouteFallback() {
+  return (
+    <div className="min-h-screen bg-[#060810] flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full lm-spin-slow mx-auto mb-4" />
+        <p className="text-gray-400 font-semibold">Loading vendor workspace...</p>
+      </div>
+    </div>
+  )
+}
 
 function AppRoutes() {
-  const { vendor } = useVendor()
+  const { vendor, authReady } = useVendor()
+
+  if (!authReady) {
+    return (
+      <div className="min-h-screen bg-[#060810] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full lm-spin-slow mx-auto mb-4" />
+          <p className="text-gray-400 font-semibold">Restoring vendor session...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/" element={vendor ? <Navigate to="/dashboard" replace /> : <Landing />} />
-      <Route path="/login" element={vendor ? <Navigate to="/dashboard" replace /> : <Login />} />
-      <Route path="/register" element={vendor ? <Navigate to="/dashboard" replace /> : <Register />} />
+    <Suspense fallback={<RouteFallback />}>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={vendor ? <Navigate to="/dashboard" replace /> : <Landing />} />
+        <Route path="/login" element={vendor ? <Navigate to="/dashboard" replace /> : <Login />} />
+        <Route path="/register" element={vendor ? <Navigate to="/dashboard" replace /> : <Register />} />
 
-      {/* Protected routes */}
-      <Route element={vendor ? <Layout /> : <Navigate to="/login" replace />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/create-store" element={<CreateStore />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/orders" element={<Orders />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/demand-prediction" element={<DemandPrediction />} />
-      </Route>
+        {/* Protected routes */}
+        <Route element={vendor ? <Layout /> : <Navigate to="/login" replace />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/create-store" element={<CreateStore />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/demand-prediction" element={<DemandPrediction />} />
+          <Route path="/reviews" element={<Reviews />} />
+        </Route>
 
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   )
 }
 

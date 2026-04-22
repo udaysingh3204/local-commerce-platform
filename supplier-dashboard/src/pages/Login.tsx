@@ -1,8 +1,9 @@
 import { useState } from "react"
 import { useSupplier } from "../context/SupplierContext"
+import GoogleSignInButton from "../components/GoogleSignInButton"
 
 export default function Login() {
-  const { login } = useSupplier()
+  const { login, loginWithGoogle } = useSupplier()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -21,10 +22,20 @@ export default function Login() {
     }
   }
 
+  const handleGoogleLogin = async (credential: string) => {
+    setError("")
+    try {
+      await loginWithGoogle(credential)
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || "Google sign-in failed")
+      throw err
+    }
+  }
+
   return (
     <div className="min-h-screen flex bg-gray-950">
       {/* LEFT */}
-      <div className="hidden lg:flex flex-col justify-between flex-1 bg-gradient-to-br from-indigo-900 via-gray-900 to-gray-950 p-12 relative overflow-hidden border-r border-gray-800">
+      <div className="hidden lg:flex flex-col justify-between flex-1 bg-[radial-gradient(circle_at_top_left,rgba(129,140,248,0.16),transparent_26%),linear-gradient(135deg,#1e1b4b_0%,#111827_55%,#030712_100%)] p-12 relative overflow-hidden border-r border-gray-800">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(99,102,241,0.12)_0%,transparent_70%)]" />
         <span className="text-2xl font-black text-white relative">🛍️ LocalMart</span>
         <div className="relative">
@@ -34,9 +45,15 @@ export default function Login() {
           <p className="text-gray-400 text-lg">Manage wholesale orders and stock for local stores.</p>
         </div>
         <div className="grid grid-cols-2 gap-3 relative">
-          {["Wholesale Orders", "Inventory Sync", "Store Network", "Analytics"].map(s => (
-            <div key={s} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3">
-              <p className="text-white font-bold text-sm">{s}</p>
+          {[
+            { title: "Wholesale Orders", copy: "Manage store demand with cleaner queue visibility and faster triage." },
+            { title: "Inventory Sync", copy: "Keep product-line visibility tied to live supplier throughput." },
+            { title: "Store Network", copy: "Track the retail side of your fulfillment footprint in one flow." },
+            { title: "Analytics", copy: "Use order shape and delivered revenue to drive smarter stocking." },
+          ].map((s) => (
+            <div key={s.title} className="bg-white/5 border border-white/10 rounded-2xl px-4 py-4 backdrop-blur-sm">
+              <p className="text-white font-black text-sm">{s.title}</p>
+              <p className="mt-2 text-xs leading-5 text-slate-400">{s.copy}</p>
             </div>
           ))}
         </div>
@@ -50,7 +67,7 @@ export default function Login() {
               📦
             </div>
             <h1 className="text-3xl font-black text-white mb-1">Supplier Login</h1>
-            <p className="text-gray-500 text-sm">Access your wholesale dashboard</p>
+            <p className="text-gray-500 text-sm">Access your wholesale workspace with sharper ops visibility and cleaner order flow.</p>
           </div>
 
           {error && (
@@ -58,6 +75,15 @@ export default function Login() {
               {error}
             </div>
           )}
+
+          <div className="space-y-4">
+            <GoogleSignInButton text="signin_with" theme="dark" onCredential={handleGoogleLogin} />
+
+            <div className="flex items-center gap-3 py-1">
+              <div className="h-px flex-1 bg-white/10" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-gray-600">Or</span>
+              <div className="h-px flex-1 bg-white/10" />
+            </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -68,7 +94,7 @@ export default function Login() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 placeholder="supplier@example.com"
-                className="mt-1 w-full px-4 py-3 rounded-xl bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="mt-1 w-full px-4 py-3 rounded-2xl bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div>
@@ -79,17 +105,30 @@ export default function Login() {
                 onChange={e => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="mt-1 w-full px-4 py-3 rounded-xl bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="mt-1 w-full px-4 py-3 rounded-2xl bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3.5 rounded-xl font-black text-sm hover:shadow-lg hover:shadow-indigo-900 transition-all disabled:opacity-60 mt-2"
+              className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3.5 rounded-2xl font-black text-sm hover:shadow-lg hover:shadow-indigo-900 transition-all disabled:opacity-60 mt-2"
             >
               {loading ? "Signing in..." : "Access Dashboard →"}
             </button>
           </form>
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              {[
+                { label: "Orders", value: "Live" },
+                { label: "Products", value: "Tracked" },
+                { label: "Revenue", value: "Clear" },
+              ].map((metric) => (
+                <div key={metric.label} className="rounded-2xl border border-white/8 bg-black/20 px-3 py-3 text-center">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-gray-500">{metric.label}</p>
+                  <p className="mt-1 text-sm font-black text-white">{metric.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

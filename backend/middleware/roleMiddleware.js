@@ -1,8 +1,12 @@
-exports.checkRole = (...roles) => {
+const checkRole = (...roles) => {
+
+  const normalizedRoles = roles.length === 1 && Array.isArray(roles[0])
+    ? roles[0]
+    : roles;
 
   return (req, res, next) => {
 
-    if (!roles.includes(req.user.role)) {
+    if (!normalizedRoles.includes(req.user.role)) {
 
       return res.status(403).json({
         message: "Access denied"
@@ -15,3 +19,7 @@ exports.checkRole = (...roles) => {
   };
 
 };
+
+// Export both ways for compatibility
+module.exports = checkRole;
+module.exports.checkRole = checkRole;

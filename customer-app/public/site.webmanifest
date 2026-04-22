@@ -1,0 +1,17 @@
+{
+  "name": "LocalMart",
+  "short_name": "LocalMart",
+  "description": "Fast local delivery from nearby stores with live tracking.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#1a0533",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

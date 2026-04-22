@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import confetti from "canvas-confetti"
+import { toast } from "sonner"
 import API from "../api/api"
+import { useAuth } from "../context/useAuth"
 
 interface Store {
   _id: string
@@ -8,20 +11,48 @@ interface Store {
   category: string
 }
 
+interface LiveCampaign {
+  campaignId: string
+  name: string
+  code?: string | null
+  type: string
+  daysRemaining?: number
+  budgetProgress?: number
+  metadata?: {
+    audience?: string
+    vibe?: string
+    quiz?: {
+      prompt?: string
+    }
+  }
+}
+
 const CATEGORY_ICONS: Record<string, string> = {
-  grocery: "🥦", food: "🍔", bakery: "🥐", pharmacy: "💊",
-  electronics: "⚡", fashion: "👗", stationery: "📚", default: "🏪"
+  grocery: "🥦",
+  food: "🍔",
+  bakery: "🥐",
+  pharmacy: "💊",
+  home: "🧼",
+  fruits: "🍎",
+  dairy: "🥛",
+  beverages: "🥤",
+  "personal-care": "🧴",
+  snacks: "🍿",
+  default: "🏪",
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  grocery:     "from-emerald-400 to-teal-500",
-  food:        "from-orange-400 to-rose-500",
-  bakery:      "from-amber-400 to-yellow-500",
-  pharmacy:    "from-blue-400 to-cyan-500",
-  electronics: "from-violet-500 to-indigo-600",
-  fashion:     "from-pink-400 to-rose-500",
-  stationery:  "from-sky-400 to-blue-500",
-  default:     "from-violet-400 to-pink-500",
+  grocery: "from-emerald-400 to-teal-500",
+  food: "from-orange-400 to-rose-500",
+  bakery: "from-amber-400 to-yellow-500",
+  pharmacy: "from-blue-400 to-cyan-500",
+  home: "from-cyan-400 to-sky-500",
+  fruits: "from-lime-400 to-emerald-500",
+  dairy: "from-sky-400 to-indigo-500",
+  beverages: "from-cyan-400 to-blue-500",
+  "personal-care": "from-pink-400 to-rose-500",
+  snacks: "from-yellow-400 to-orange-500",
+  default: "from-violet-400 to-pink-500",
 }
 
 const STORE_GRADIENTS = [
@@ -40,25 +71,139 @@ const CAT_HIGHLIGHTS = [
   { key: "food", label: "Food", icon: "🍔", bg: "bg-orange-50 border-orange-100 hover:border-orange-300" },
   { key: "bakery", label: "Bakery", icon: "🥐", bg: "bg-amber-50 border-amber-100 hover:border-amber-300" },
   { key: "pharmacy", label: "Pharmacy", icon: "💊", bg: "bg-blue-50 border-blue-100 hover:border-blue-300" },
-  { key: "electronics", label: "Electronics", icon: "⚡", bg: "bg-violet-50 border-violet-100 hover:border-violet-300" },
-  { key: "fashion", label: "Fashion", icon: "👗", bg: "bg-pink-50 border-pink-100 hover:border-pink-300" },
+  { key: "home", label: "Home Care", icon: "🧼", bg: "bg-cyan-50 border-cyan-100 hover:border-cyan-300" },
+  { key: "grocery", label: "Fresh Picks", icon: "🥗", bg: "bg-lime-50 border-lime-100 hover:border-lime-300" },
 ]
 
-const TICKER = ["🥦 Fresh Groceries", "⚡ 30 min delivery", "🏪 500+ Stores", "🥐 Bakers near you", "💊 Medicine delivery", "👗 Local Fashion", "🍔 Hot Food"]
+const TICKER = ["🥦 Fresh groceries", "🧼 Home essentials", "🥐 Bakery drops", "💊 Medicine delivery", "🍔 Cafe bites", "⚡ 30 min runs", "🏪 Hyperlocal stores"]
+
+const CULTURE_CARDS = [
+  {
+    title: "Campus clutch runs",
+    body: "Late lecture, no snacks, no problem. Refill essentials, drinks and bakery picks without leaving the hostel or study room.",
+    badge: "Student speed",
+    icon: "🎒",
+  },
+  {
+    title: "Creator-mode group orders",
+    body: "Build one shared cart for game nights, shoots, rehearsals or flat parties, then track the run live with your crew.",
+    badge: "Social commerce",
+    icon: "📲",
+  },
+  {
+    title: "Mood-based local drops",
+    body: "Hot food, fresh groceries, pharmacy top-ups and impulse bakery drops all live in one place instead of five different apps.",
+    badge: "One app stack",
+    icon: "✨",
+  },
+]
+
+const POWER_FEATURES = [
+  {
+    title: "Live courier radar",
+    copy: "Real-time delivery tracking now follows your active orders across the app, not just on the map screen.",
+    cta: "Track active orders",
+    target: "/orders",
+  },
+  {
+    title: "Hyperlocal essentials lane",
+    copy: "Search nearby grocery, bakery, food and pharmacy stores from one feed with quick category switching.",
+    cta: "Browse stores",
+    target: "/",
+  },
+  {
+    title: "Delivery intelligence",
+    copy: "Your order history now learns average trip speed, reliability and on-time performance from real delivery data.",
+    cta: "View order history",
+    target: "/orders",
+  },
+]
+
+const SEO_FAQ = [
+  {
+    q: "What can I order on LocalMart in Noida?",
+    a: "You can order groceries, bakery items, hot food, pharmacy essentials and everyday neighborhood store products from nearby sellers in Noida.",
+  },
+  {
+    q: "Does LocalMart support live delivery tracking?",
+    a: "Yes. Active orders include real-time tracking, courier ETA updates, status notifications and delivery history intelligence.",
+  },
+  {
+    q: "Why use LocalMart instead of a generic marketplace?",
+    a: "LocalMart focuses on nearby stores first, so discovery feels hyperlocal, deliveries stay practical and neighborhood businesses stay visible online.",
+  },
+]
+
+const GROWTH_INTERESTS = ["Late-night essentials", "Campus drops", "Group orders", "Bakery", "Pharmacy", "Groceries", "Home care"]
+
+const CREW_BENEFITS = [
+  "Priority access to referral drops and city launches",
+  "Campus and apartment-block promo packs for shared ordering",
+  "Referral-ready invite code you can paste into group chats instantly",
+]
+
+const MISSION_CONTROL = [
+  {
+    badge: "Radar run",
+    title: "Track the drop like it owes you money",
+    body: "The customer journey now has a dedicated delivery radar. Follow live route energy instead of refreshing a flat order card.",
+    cta: "Open orders",
+    target: "/orders",
+  },
+  {
+    badge: "Coupon chaos",
+    title: "Earn your discounts instead of begging for them",
+    body: "Mission-style coupon puzzles turn checkout into an actual interaction layer, not a dead input box with vibes.",
+    cta: "Browse stores",
+    target: "/",
+  },
+  {
+    badge: "Crew flywheel",
+    title: "Turn one shopper into a whole group order",
+    body: "Referral codes, campus waitlists and social-order behavior now sit inside the same growth story instead of random marketing copy.",
+    cta: "Copy invite",
+    target: "invite",
+  },
+]
 
 export default function Home() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [stores, setStores] = useState<Store[]>([])
   const [filtered, setFiltered] = useState<Store[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [activeCategory, setActiveCategory] = useState("All")
+  const [leadName, setLeadName] = useState("")
+  const [leadEmail, setLeadEmail] = useState("")
+  const [leadPhone, setLeadPhone] = useState("")
+  const [leadUseCase, setLeadUseCase] = useState("campus-waitlist")
+  const [leadInterests, setLeadInterests] = useState<string[]>(["Campus drops", "Group orders"])
+  const [leadSubmitting, setLeadSubmitting] = useState(false)
+  const [leadCaptured, setLeadCaptured] = useState(false)
+  const [inviteCode, setInviteCode] = useState("LM-NOIDA-CREW")
+  const [liveCampaigns, setLiveCampaigns] = useState<LiveCampaign[]>([])
+
+  useEffect(() => {
+    if (!user) return
+
+    setLeadName((current) => current || user.name || "")
+    setLeadEmail((current) => current || user.email || "")
+    const baseCode = `${(user.name || user.email || "LOCALMART").replace(/[^A-Za-z0-9]/g, "").slice(0, 6).toUpperCase()}-${(user._id || "CREW").slice(-4).toUpperCase()}`
+    setInviteCode(baseCode || "LM-NOIDA-CREW")
+  }, [user])
 
   useEffect(() => {
     API.get(`/stores/nearby?lat=28.5355&lng=77.391`)
       .then(res => { setStores(res.data); setFiltered(res.data) })
       .catch(() => {})
       .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    API.get("/promotions?active=true")
+      .then((res) => setLiveCampaigns((res.data?.campaigns || []).slice(0, 3)))
+      .catch(() => setLiveCampaigns([]))
   }, [])
 
   const categories = ["All", ...Array.from(new Set(stores.map(s => s.category).filter(Boolean)))]
@@ -71,6 +216,57 @@ export default function Home() {
   }, [search, activeCategory, stores])
 
   const tickerDouble = [...TICKER, ...TICKER]
+
+  const toggleInterest = (interest: string) => {
+    setLeadInterests((current) => current.includes(interest)
+      ? current.filter((item) => item !== interest)
+      : [...current, interest].slice(0, 4))
+  }
+
+  const handleLeadSubmit = async () => {
+    if (!leadEmail.trim()) {
+      toast.error("Add an email so we can reserve your slot.")
+      return
+    }
+
+    setLeadSubmitting(true)
+
+    try {
+      await API.post("/growth/leads", {
+        name: leadName,
+        email: leadEmail,
+        phone: leadPhone,
+        city: "Noida",
+        useCase: leadUseCase,
+        source: "customer-homepage",
+        referralCode: inviteCode,
+        interests: leadInterests,
+        metadata: {
+          hasAccount: Boolean(user),
+          activeCategory,
+        },
+      })
+
+      setLeadCaptured(true)
+      toast.success("You’re on the list. Invite flow is ready.")
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } })
+    } catch (error: any) {
+      toast.error(error?.response?.data?.error || "Could not save your spot right now.")
+    } finally {
+      setLeadSubmitting(false)
+    }
+  }
+
+  const copyInvite = async () => {
+    const shareText = `Join my LocalMart crew in Noida. Use code ${inviteCode} for campus drops, fast essentials and live order tracking.`
+
+    try {
+      await navigator.clipboard.writeText(shareText)
+      toast.success("Invite copy is on your clipboard.")
+    } catch {
+      toast.error("Clipboard access is blocked in this browser.")
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -151,6 +347,37 @@ export default function Home() {
 
       {/* ── CATEGORY TILES ── */}
       <div className="max-w-5xl mx-auto px-6 pt-8 pb-4">
+        <section className="mb-10 rounded-4xl border border-violet-100 bg-white p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-6 flex-wrap mb-6">
+            <div className="max-w-2xl">
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-violet-500">Why Gen Z keeps this open</p>
+              <h2 className="mt-2 text-2xl font-black text-gray-900">Built for fast local life, not slow marketplace sprawl</h2>
+              <p className="mt-2 text-sm leading-6 text-gray-500">
+                LocalMart is structured around what actually matters in a city like Noida: quick essentials, live tracking, neighborhood discovery and fewer taps between "need it" and "it’s here".
+              </p>
+            </div>
+            <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-500">Search-friendly promise</p>
+              <p className="mt-1 text-sm font-black text-violet-700">Fast local delivery from nearby Noida stores</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {CULTURE_CARDS.map((card) => (
+              <div key={card.title} className="rounded-3xl border border-gray-100 bg-gray-50 p-5">
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <span className="text-3xl">{card.icon}</span>
+                  <span className="rounded-full bg-violet-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-violet-700">
+                    {card.badge}
+                  </span>
+                </div>
+                <h3 className="text-lg font-black text-gray-900">{card.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-gray-500">{card.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <h2 className="text-lg font-black text-gray-900 mb-4">Shop by Category</h2>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
           {CAT_HIGHLIGHTS.map(cat => (
@@ -187,6 +414,207 @@ export default function Home() {
 
       {/* ── STORES GRID ── */}
       <div className="max-w-5xl mx-auto px-6 pb-20">
+        <section className="mb-10 rounded-4xl bg-linear-to-br from-slate-950 via-violet-950 to-slate-900 p-6 text-white overflow-hidden relative">
+          <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+          <div className="relative z-10">
+            <div className="max-w-2xl mb-6">
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-violet-200">Practical product wins</p>
+              <h2 className="mt-2 text-2xl font-black">A faster local-commerce stack for everyday runs</h2>
+              <p className="mt-2 text-sm leading-6 text-violet-100/80">
+                These are real product behaviors already shipping in the app, not placeholder marketing claims.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {POWER_FEATURES.map((feature) => (
+                <div key={feature.title} className="rounded-3xl border border-white/10 bg-white/6 p-5 backdrop-blur-sm">
+                  <h3 className="text-lg font-black">{feature.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-violet-100/75">{feature.copy}</p>
+                  <button
+                    onClick={() => navigate(feature.target)}
+                    className="mt-4 rounded-full bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-slate-950 transition hover:opacity-90"
+                  >
+                    {feature.cta}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-10 rounded-4xl border border-cyan-100 bg-linear-to-br from-cyan-50 via-white to-blue-50 p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-6 flex-wrap mb-6">
+            <div className="max-w-2xl">
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-600">Mission control</p>
+              <h2 className="mt-2 text-2xl font-black text-slate-950">The product is growing into a proper local-commerce game loop</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Radar tracking, puzzle-led discounts, referral loops and social ordering are now part of one customer story. This is the shift from delivery app to local-commerce habit.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-cyan-200 bg-white px-4 py-3 shadow-sm">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-600">Current state</p>
+              <p className="mt-1 text-sm font-black text-slate-900">Interactive, live, and way less basic</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {MISSION_CONTROL.map((mission) => (
+              <div key={mission.title} className="rounded-3xl border border-white bg-white p-5 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-600">{mission.badge}</p>
+                <h3 className="mt-3 text-lg font-black text-slate-950">{mission.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{mission.body}</p>
+                <button
+                  onClick={() => mission.target === "invite" ? void copyInvite() : navigate(mission.target)}
+                  className="mt-4 rounded-full bg-slate-950 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white transition hover:opacity-90"
+                >
+                  {mission.cta}
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {liveCampaigns.length > 0 && (
+          <section className="mb-10 rounded-4xl bg-linear-to-br from-slate-950 via-violet-950 to-slate-900 p-6 text-white overflow-hidden relative">
+            <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+            <div className="relative z-10">
+              <div className="flex items-start justify-between gap-6 flex-wrap mb-6">
+                <div className="max-w-2xl">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-violet-200">Live campaign radar</p>
+                  <h2 className="mt-2 text-2xl font-black">Checkout missions now have a storefront signal too</h2>
+                  <p className="mt-2 text-sm leading-6 text-violet-100/80">
+                    These campaign spotlights are coming from the same backend metadata that powers the quiz cards in checkout, so the tone and urgency stay aligned before the user even starts paying.
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/8 px-4 py-3 shadow-sm">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-200">Campaign continuity</p>
+                  <p className="mt-1 text-sm font-black text-white">Discovery and checkout now speak the same language</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {liveCampaigns.map((campaign) => (
+                  <div key={campaign.campaignId} className="rounded-3xl border border-white/10 bg-white/6 p-5 backdrop-blur-sm">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-sky-200">
+                      {campaign.metadata?.audience ? String(campaign.metadata.audience).replace(/_/g, " ") : "all shoppers"}
+                    </p>
+                    <h3 className="mt-3 text-lg font-black text-white">{campaign.name}</h3>
+                    <p className="mt-2 text-sm leading-6 text-violet-100/75">
+                      {campaign.metadata?.quiz?.prompt || campaign.metadata?.vibe || "Live promo energy is active right now across the storefront and checkout."}
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {campaign.code && <span className="rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[11px] font-bold text-white">{campaign.code}</span>}
+                      {typeof campaign.daysRemaining === "number" && <span className="rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[11px] font-bold text-violet-100">{campaign.daysRemaining}d left</span>}
+                      {typeof campaign.budgetProgress === "number" && <span className="rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[11px] font-bold text-violet-100">{campaign.budgetProgress}% used</span>}
+                    </div>
+                    <button
+                      onClick={() => navigate("/")}
+                      className="mt-4 rounded-full bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-slate-950 transition hover:opacity-90"
+                    >
+                      Shop this energy
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section className="mb-10 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-5">
+          <div className="rounded-4xl border border-emerald-100 bg-white p-6 shadow-sm">
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-5">
+              <div className="max-w-xl">
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-500">Conversion engine</p>
+                <h2 className="mt-2 text-2xl font-black text-gray-900">Join the campus and crew-drop waitlist</h2>
+                <p className="mt-2 text-sm leading-6 text-gray-500">
+                  This is the practical growth layer: collect high-intent local leads, hand them a ready referral code, and turn discovery traffic into measurable launch demand.
+                </p>
+              </div>
+              <div className="rounded-2xl bg-emerald-50 border border-emerald-100 px-4 py-3">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-600">Current city</p>
+                <p className="mt-1 text-sm font-black text-emerald-800">Noida growth queue</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+              <input
+                value={leadName}
+                onChange={(event) => setLeadName(event.target.value)}
+                placeholder="Your name"
+                className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 outline-none focus:border-emerald-400"
+              />
+              <input
+                value={leadEmail}
+                onChange={(event) => setLeadEmail(event.target.value)}
+                placeholder="College or personal email"
+                className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 outline-none focus:border-emerald-400"
+              />
+              <input
+                value={leadPhone}
+                onChange={(event) => setLeadPhone(event.target.value)}
+                placeholder="WhatsApp number"
+                className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 outline-none focus:border-emerald-400"
+              />
+              <select
+                value={leadUseCase}
+                onChange={(event) => setLeadUseCase(event.target.value)}
+                className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 outline-none focus:border-emerald-400"
+              >
+                <option value="campus-waitlist">Campus waitlist</option>
+                <option value="apartment-crew">Apartment crew drops</option>
+                <option value="creator-community">Creator community orders</option>
+              </select>
+            </div>
+
+            <div className="flex flex-wrap gap-2 mb-5">
+              {GROWTH_INTERESTS.map((interest) => (
+                <button
+                  key={interest}
+                  onClick={() => toggleInterest(interest)}
+                  className={`rounded-full px-3 py-2 text-xs font-bold transition ${leadInterests.includes(interest)
+                    ? "bg-emerald-600 text-white"
+                    : "border border-gray-200 bg-white text-gray-600 hover:border-emerald-200 hover:text-emerald-700"}`}
+                >
+                  {interest}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={handleLeadSubmit}
+                disabled={leadSubmitting}
+                className="rounded-full bg-linear-to-r from-emerald-500 to-teal-500 px-6 py-3 text-sm font-black text-white shadow-lg shadow-emerald-100 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {leadSubmitting ? "Saving your slot..." : leadCaptured ? "Spot reserved" : "Reserve my crew slot"}
+              </button>
+              <p className="text-xs font-semibold text-gray-500">High-intent leads are stored in the backend for follow-up campaigns.</p>
+            </div>
+          </div>
+
+          <div className="rounded-4xl bg-linear-to-br from-emerald-900 via-teal-800 to-slate-900 p-6 text-white shadow-sm">
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-200">Referral motion</p>
+            <h2 className="mt-2 text-2xl font-black">Turn one signup into a whole crew order</h2>
+            <div className="mt-5 rounded-3xl border border-white/10 bg-white/8 p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-200">Your invite code</p>
+              <p className="mt-2 text-3xl font-black tracking-wide">{inviteCode}</p>
+              <p className="mt-2 text-sm leading-6 text-emerald-50/80">Paste it in college groups, flat chats or creator circles to seed a shared LocalMart launch queue.</p>
+              <button
+                onClick={copyInvite}
+                className="mt-4 rounded-full bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-emerald-950 transition hover:opacity-90"
+              >
+                Copy invite message
+              </button>
+            </div>
+            <div className="mt-5 space-y-3">
+              {CREW_BENEFITS.map((item) => (
+                <div key={item} className="rounded-2xl border border-white/10 bg-black/15 px-4 py-3 text-sm text-emerald-50/85">
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-black text-gray-900">
             {loading ? "Finding stores..." : `${filtered.length} store${filtered.length !== 1 ? "s" : ""} nearby`}
@@ -274,6 +702,24 @@ export default function Home() {
             })}
           </div>
         )}
+
+        <section className="mt-14 rounded-4xl border border-gray-100 bg-white p-6 shadow-sm">
+          <div className="max-w-3xl mb-6">
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-violet-500">SEO FAQ</p>
+            <h2 className="mt-2 text-2xl font-black text-gray-900">Local delivery answers customers actually search for</h2>
+            <p className="mt-2 text-sm leading-6 text-gray-500">
+              This section helps LocalMart rank for practical local-commerce queries while also explaining the product clearly to new users.
+            </p>
+          </div>
+          <div className="space-y-4">
+            {SEO_FAQ.map((item) => (
+              <div key={item.q} className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
+                <h3 className="text-base font-black text-gray-900">{item.q}</h3>
+                <p className="mt-2 text-sm leading-6 text-gray-500">{item.a}</p>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   )

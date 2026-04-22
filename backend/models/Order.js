@@ -52,11 +52,64 @@ const orderSchema = new mongoose.Schema({
     default: "pending"
   },
 
+  paymentReference: String,
+
+  paymentFailureReason: String,
+
+  cancellationReason: String,
+
+  paymentAttemptCount: {
+    type: Number,
+    default: 0
+  },
+
+  lastPaymentAttemptAt: Date,
+
+  paymentRecoveredAt: Date,
+
   /* ORDER TOTAL */
 
   totalAmount: {
     type: Number,
     required: true
+  },
+
+  pricingBreakdown: {
+    subtotalAmount: {
+      type: Number,
+      default: 0,
+    },
+    discountAmount: {
+      type: Number,
+      default: 0,
+    },
+    finalAmount: {
+      type: Number,
+      default: 0,
+    },
+  },
+
+  promotionAudit: {
+    campaignId: {
+      type: String,
+      default: null,
+    },
+    couponCode: {
+      type: String,
+      default: null,
+    },
+    campaignName: {
+      type: String,
+      default: null,
+    },
+    discountAmount: {
+      type: Number,
+      default: 0,
+    },
+    appliedAt: {
+      type: Date,
+      default: null,
+    },
   },
 
   /* ORDER STATUS */
@@ -81,11 +134,19 @@ const orderSchema = new mongoose.Schema({
     lng: Number
   },
 
+  deliveryLocationUpdatedAt: Date,
+
   deliveryStartTime: Date,
 
   deliveryEndTime: Date,
 
   estimatedDeliveryTime: Number, // minutes
+
+  deliveryAddress: {
+    line: String,
+    city: String,
+    pincode: String
+  },
 
   /* CUSTOMER LOCATION */
 
@@ -111,6 +172,11 @@ const orderSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 orderSchema.index({ storeLocation: "2dsphere" });
-orderSchema.index({ customerId: 1 });
-orderSchema.index({ status: 1 });
+// Compound indexes for production query performance
+orderSchema.index({ customerId: 1, status: 1, createdAt: -1 });
+orderSchema.index({ storeId: 1, status: 1, createdAt: -1 });
+orderSchema.index({ deliveryPartnerId: 1, status: 1 });
+orderSchema.index({ status: 1, createdAt: -1 });
+orderSchema.index({ paymentStatus: 1, paymentMethod: 1 });
+orderSchema.index({ "promotionAudit.campaignId": 1 }, { sparse: true });
 module.exports = mongoose.model("Order", orderSchema);

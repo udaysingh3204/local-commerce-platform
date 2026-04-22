@@ -36,7 +36,7 @@ function SkeletonCard() {
 }
 
 export default function Dashboard() {
-  const { vendor, store } = useVendor()
+  const { vendor, store, startup } = useVendor()
   const [analytics, setAnalytics] = useState<any>(null)
   const [products, setProducts] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
@@ -97,6 +97,19 @@ export default function Dashboard() {
         <div>
           <h2 className="text-2xl font-black text-white">{getGreeting()}, {vendor?.name?.split(" ")[0] ?? "Vendor"} 👋</h2>
           <p className="text-gray-500 text-sm mt-0.5">{new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-300">
+              {startup.storesCount} store{startup.storesCount !== 1 ? "s" : ""} connected
+            </span>
+            <span className="rounded-xl border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-xs font-bold text-blue-300">
+              {startup.activeOrders} active order{startup.activeOrders !== 1 ? "s" : ""}
+            </span>
+            {startup.pendingPayments > 0 && (
+              <span className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-xs font-bold text-amber-300">
+                {startup.pendingPayments} payment issue{startup.pendingPayments !== 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
         </div>
         <Link to="/orders" className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors shadow-lg shadow-emerald-900/40">
           <span>🧾</span> Manage Orders

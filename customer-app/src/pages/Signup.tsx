@@ -2,6 +2,8 @@ import { useState } from "react"
 import API from "../api/api"
 import { useNavigate, Link } from "react-router-dom"
 import { toast } from "sonner"
+import { useAuth } from "../context/useAuth"
+import GoogleSignInButton from "../components/GoogleSignInButton"
 
 const PERKS = [
   { icon: "🆓", text: "100% free to join, forever" },
@@ -14,6 +16,7 @@ export default function Signup() {
   const [form, setForm] = useState({ name: "", email: "", password: "", phone: "" })
   const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
+  const { login } = useAuth()
   const navigate = useNavigate()
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [k]: e.target.value }))
@@ -37,14 +40,22 @@ export default function Signup() {
     if (form.password.length < 8) { toast.error("Password must be at least 8 characters"); return }
     setLoading(true)
     try {
-      await API.post("/auth/register", form)
+      const res = await API.post("/auth/register", form)
+      login(res.data.user, res.data.token)
       toast.success("Account created! 🎉")
-      navigate("/login")
-    } catch {
-      toast.error("Signup failed — email may be taken")
+      navigate("/")
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message ?? "Signup failed — email may be taken")
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleGoogleSignup = async (credential: string) => {
+    const res = await API.post("/auth/google", { credential, role: "customer" })
+    login(res.data.user, res.data.token)
+    toast.success("Your account is ready ✨")
+    navigate("/")
   }
 
   return (
@@ -99,6 +110,14 @@ export default function Signup() {
           </div>
 
           <div className="space-y-4">
+            <GoogleSignInButton text="signup_with" onCredential={handleGoogleSignup} />
+
+            <div className="flex items-center gap-3 py-1">
+              <div className="h-px flex-1 bg-gray-100" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-gray-300">Or</span>
+              <div className="h-px flex-1 bg-gray-100" />
+            </div>
+
             {[
               { k: "name", label: "Full Name", type: "text", ph: "Your name" },
               { k: "email", label: "Email", type: "email", ph: "you@example.com" },
@@ -157,6 +176,14 @@ export default function Signup() {
                 Creating account...
               </span>
             ) : "Create Account →"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { toast.success("Browsing as guest"); navigate("/") }}
+            className="mt-3 w-full border-2 border-gray-100 text-gray-700 py-3.5 rounded-xl font-black text-sm hover:border-emerald-200 hover:text-emerald-600 transition-all"
+          >
+            Continue as Guest
           </button>
 
           <p className="text-center text-sm text-gray-500 mt-6">

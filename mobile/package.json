@@ -1,0 +1,17 @@
+{
+  "name": "local-commerce-platform-mobile",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "customer-app-native",
+    "driver-app-native"
+  ],
+  "scripts": {
+    "start:customer": "npm --prefix ./customer-app-native run start",
+    "start:driver": "npm --prefix ./driver-app-native run start",
+    "android:customer": "npm --prefix ./customer-app-native run android",
+    "android:driver": "npm --prefix ./driver-app-native run android",
+    "ios:customer": "npm --prefix ./customer-app-native run ios",
+    "ios:driver": "npm --prefix ./driver-app-native run ios"
+  }
+}

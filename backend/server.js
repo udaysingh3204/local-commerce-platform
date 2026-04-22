@@ -3,6 +3,16 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 
+/* ── Sentry must initialise BEFORE any other require ── */
+const { init: initSentry, Sentry } = require("./config/sentry");
+initSentry();
+
+const logger = require("./config/logger");
+
+if (!process.env.GOOGLE_CLIENT_ID) {
+  logger.warn("[auth] GOOGLE_CLIENT_ID is not configured. Google sign-in is disabled.")
+}
+
 const http = require("http");
 const { Server } = require("socket.io");
 const {
@@ -28,6 +38,39 @@ const inventoryRoutes = require("./routes/inventoryRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const predictionRoutes = require("./routes/predictionRoutes");
 const driverAuthRoutes = require("./routes/driverAuthRoutes");
+const growthRoutes = require("./routes/growthRoutes");
+const demoRoutes = require("./routes/demoRoutes");
+const appRoutes = require("./routes/appRoutes");
+const dispatchMLRoutes = require("./routes/dispatchMLRoutes");
+const queueGamificationRoutes = require("./routes/queueGamificationRoutes");
+const dispatchServiceML = require("./services/dispatchServiceML");
+// Phase 2 Routes
+const chatRoutes = require("./routes/chatRoutes");
+const subscriptionRoutes = require("./routes/subscriptionRoutes");
+const referralRoutes = require("./routes/referralRoutes");
+const adminAnalyticsRoutes = require("./routes/adminAnalyticsRoutes");
+const languageRoutes = require("./routes/languageRoutes");
+// Phase 2 Services
+const chatService = require("./services/chatService");
+const subscriptionService = require("./services/subscriptionService");
+const referralService = require("./services/referralService");
+const adminAnalyticsService = require("./services/adminAnalyticsService");
+const languageService = require("./services/languageService");
+// Phase 3 Routes
+const searchRoutes = require("./routes/searchRoutes");
+const loyaltyRoutes = require("./routes/loyaltyRoutes");
+const webhookRoutes = require("./routes/webhookRoutes");
+const promotionRoutes = require("./routes/promotionRoutes");
+const wishlistRoutes = require("./routes/wishlistRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
+const addressRoutes = require("./routes/addressRoutes");
+// Phase 3 Services
+const searchRecommendationService = require("./services/searchRecommendationService");
+const loyaltyService = require("./services/loyaltyService");
+const eventBusService = require("./services/eventBusService");
+const promotionService = require("./services/promotionService");
+const wishlistService = require("./services/wishlistService");
+const { handlePaymentWebhook } = require("./controllers/paymentController");
 const app = express();
 const server = http.createServer(app);
 const morgan = require("morgan")
@@ -37,13 +80,20 @@ app.set("trust proxy", 1)
 app.use(morgan("combined"))
 
 /* CORS ORIGIN CHECKER */
-const ALLOWED_ORIGINS = [
+const DEFAULT_ALLOWED_ORIGINS = [
   "https://admin-dashboard-ruddy-eight-35.vercel.app",
   "https://local-commerce-platform.vercel.app",
   "https://delivery-dashboard-three-murex.vercel.app",
   "https://supplier-dashboard-tau.vercel.app",
   "https://vendor-dashboard-rho.vercel.app",
 ];
+
+const configuredOrigins = (process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const ALLOWED_ORIGINS = [...new Set([...DEFAULT_ALLOWED_ORIGINS, ...configuredOrigins])];
 
 function isAllowedOrigin(origin) {
   if (!origin) return true; // same-origin / server-to-server
@@ -80,6 +130,8 @@ app.use(cors({
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 }));
+app.post("/api/payment/webhook", express.raw({ type: "application/json" }), handlePaymentWebhook)
+app.post("/api/payments/webhook", express.raw({ type: "application/json" }), handlePaymentWebhook)
 app.use(express.json());
 
 app.use(helmet())
@@ -95,16 +147,31 @@ app.use((req,res,next)=>{
 /* REQUEST LOGGER (helps debugging) */
 
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
+  logger.debug(`${req.method} ${req.url}`);
   next();
 });
 
 /* HEALTH CHECK */
 
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    status: "OK",
-    uptime: process.uptime()
+app.get("/health", async (req, res) => {
+  const dbState = mongoose.connection.readyState; // 1 = connected
+  let redisStatus = "unconfigured";
+  try {
+    const { client: redisClient } = require("./config/redis");
+    if (redisClient && redisClient.isOpen) {
+      await redisClient.ping();
+      redisStatus = "ok";
+    }
+  } catch {
+    redisStatus = "error";
+  }
+  const status = dbState === 1 ? 200 : 503;
+  res.status(status).json({
+    status: dbState === 1 ? "OK" : "DEGRADED",
+    db: dbState === 1 ? "ok" : "error",
+    redis: redisStatus,
+    uptime: Math.floor(process.uptime()),
+    version: process.env.npm_package_version || "1.0.0",
   });
 });
 
@@ -117,6 +184,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/delivery", deliveryRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/payments", paymentRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/wholesale", wholesaleRoutes);
@@ -124,15 +192,36 @@ app.use("/api/inventory", inventoryRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/prediction", predictionRoutes);
 app.use("/api/driver", driverAuthRoutes);
+app.use("/api/growth", growthRoutes);
+app.use("/api/demo", demoRoutes);
+app.use("/api/app", appRoutes);
+app.use("/api/dispatch", dispatchMLRoutes);
+app.use("/api/queue", queueGamificationRoutes);
+app.use("/api/gamification", queueGamificationRoutes);
+app.use("/api/pricing", queueGamificationRoutes);
+// Phase 2 Routes
+app.use("/api/chat", chatRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
+app.use("/api/referral", referralRoutes);
+app.use("/api/admin/analytics", adminAnalyticsRoutes);
+app.use("/api/language", languageRoutes);
+// Phase 3 Routes
+app.use("/api/search", searchRoutes);
+app.use("/api/loyalty", loyaltyRoutes);
+app.use("/api/webhooks", webhookRoutes);
+app.use("/api/promotions", promotionRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/addresses", addressRoutes);
 /* SOCKET EVENTS */
 io.on("connection", (socket) => {
 
-  console.log("User connected:", socket.id);
+  logger.debug("User connected: " + socket.id);
 
   // 👇 JOIN ROOM PER ORDER
   socket.on("joinOrderRoom", (orderId) => {
     socket.join(orderId);
-    console.log(`Joined room: ${orderId}`);
+    logger.debug(`Joined room: ${orderId}`);
   });
 
   // 👇 DRIVER LOCATION UPDATE
@@ -147,41 +236,70 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    logger.debug("User disconnected: " + socket.id);
   });
 
   socket.on("driverLocationUpdate", ({ driverId, location }) => {
-  global.drivers = global.drivers || {}
-  global.drivers[driverId] = location
-})
+    global.drivers = global.drivers || {}
+    global.drivers[driverId] = location
+  })
 });
 
 /* DATABASE CONNECTION */
 
 mongoose.connect(process.env.MONGO_URI)
 
-.then(() => {
+.then(async () => {
 
-  console.log("MongoDB connected");
+  logger.info("MongoDB connected");
+
+  // Initialize ML services
+  try {
+    await dispatchServiceML.initialize();
+  } catch (err) {
+    logger.error("ML Service initialization error", { error: err.message });
+  }
 
   const PORT = process.env.PORT || 5000;
 
   server.listen(PORT, () => {
-
-    console.log(`Server running on port ${PORT}`);
-
+    logger.info(`Server running on port ${PORT}`);
   });
 
 })
 
 .catch((err) => {
-
-  console.error("MongoDB Error:", err);
-
+  logger.error("MongoDB Error", { error: err.message });
+  process.exit(1);
 });
-
-
 
 const errorHandler = require("./middleware/errorHandler")
 
+// Sentry error handler must be before custom errorHandler
+if (Sentry && typeof Sentry.expressErrorHandler === "function") {
+  app.use(Sentry.expressErrorHandler())
+} else if (Sentry && Sentry.Handlers && typeof Sentry.Handlers.errorHandler === "function") {
+  app.use(Sentry.Handlers.errorHandler())
+}
+
 app.use(errorHandler)
+
+/* GRACEFUL SHUTDOWN */
+
+const shutdown = (signal) => {
+  logger.info(`Received ${signal}, shutting down gracefully`);
+  server.close(() => {
+    mongoose.connection.close(false, () => {
+      logger.info("MongoDB connection closed");
+      process.exit(0);
+    });
+  });
+  // Force shutdown after 30s
+  setTimeout(() => {
+    logger.error("Forced shutdown after timeout");
+    process.exit(1);
+  }, 30000);
+};
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT",  () => shutdown("SIGINT"));
