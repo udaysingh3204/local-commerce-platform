@@ -43,6 +43,32 @@ exports.getStores = async (req, res) => {
 
 
 
+exports.getStoreById = async (req, res) => {
+
+  try {
+
+    const store = await Store.findById(req.params.storeId)
+
+    if (!store) {
+      return res.status(404).json({
+        message: "Store not found"
+      })
+    }
+
+    res.json(store)
+
+  } catch (error) {
+
+    res.status(500).json({
+      error: error.message
+    })
+
+  }
+
+}
+
+
+
 exports.getVendorStores = async (req, res) => {
 
   try {

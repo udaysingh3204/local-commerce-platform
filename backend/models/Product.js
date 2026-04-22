@@ -35,4 +35,8 @@ const productSchema = new mongoose.Schema({
 }, { timestamps: true });
 productSchema.index({ name: 1 });
 productSchema.index({ storeId: 1 });
+// Compound indexes for category browsing and availability queries
+productSchema.index({ storeId: 1, category: 1 });
+productSchema.index({ storeId: 1, stock: 1 });
+productSchema.index({ category: 1, price: 1 });
 module.exports = mongoose.model("Product", productSchema);

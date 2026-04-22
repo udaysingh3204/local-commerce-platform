@@ -1,4 +1,5 @@
 const Order = require("../models/Order")
+const mongoose = require("mongoose")
 
 exports.predictDemand = async (storeId) => {
 
@@ -10,7 +11,9 @@ exports.predictDemand = async (storeId) => {
 
     order.items.forEach(item => {
 
+      if (!item.productId) return
       const id = item.productId.toString()
+      if (!mongoose.Types.ObjectId.isValid(id)) return
 
       if (!productDemand[id]) {
 

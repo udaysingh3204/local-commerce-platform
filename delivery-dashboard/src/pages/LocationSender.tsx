@@ -1,50 +1,64 @@
-import { useEffect } from "react"
-import { io } from "socket.io-client"
+import { useEffect, useState } from "react"
+import API from "../api/api"
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? "https://local-commerce-platform-production.up.railway.app"
-const socket = io(SOCKET_URL)
-
-export default function LocationSender({ orderId }: any) {
+export default function LocationSender({ orderId }: { orderId?: string }) {
+  const [status, setStatus] = useState("Acquiring driver GPS...")
 
   useEffect(() => {
-
-    if (!orderId) return
+    let cancelled = false
 
     const interval = setInterval(() => {
 
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
 
           const location = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
           }
 
-          socket.emit("deliveryLocationUpdate", {
-            orderId,
-            location
-          })
+          try {
+            await API.patch("/driver/me/location", location)
+            if (!cancelled) {
+              setStatus(orderId ? "Sharing driver and order location..." : "Driver location synced for dispatch")
+            }
+          } catch {
+            if (!cancelled) {
+              setStatus("Unable to sync driver GPS with backend")
+            }
+          }
 
         },
-        () => {
+        async () => {
           console.log("Location permission denied")
 
           // fallback (fake movement)
-          socket.emit("deliveryLocationUpdate", {
-            orderId,
-            location: {
-              lat: 28.5355 + Math.random() * 0.01,
-              lng: 77.3910 + Math.random() * 0.01
+          const fallbackLocation = {
+            lat: 28.5355 + Math.random() * 0.01,
+            lng: 77.3910 + Math.random() * 0.01
+          }
+
+          try {
+            await API.patch("/driver/me/location", fallbackLocation)
+            if (!cancelled) {
+              setStatus(orderId ? "Using fallback route simulation" : "Using fallback GPS for dispatch simulation")
             }
-          })
+          } catch {
+            if (!cancelled) {
+              setStatus("Location sharing unavailable")
+            }
+          }
         }
       )
 
     }, 3000)
 
-    return () => clearInterval(interval)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
 
   }, [orderId])
 
-  return <p>📡 Sending live location...</p>
+  return <p>📡 {status}</p>
 }

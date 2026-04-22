@@ -3,6 +3,7 @@ import API from "../api/api"
 import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "../context/useAuth"
 import { toast } from "sonner"
+import GoogleSignInButton from "../components/GoogleSignInButton"
 
 const PERKS = [
   { icon: "⚡", text: "30-minute delivery, guaranteed" },
@@ -27,11 +28,18 @@ export default function Login() {
       login(res.data.user, res.data.token)
       toast.success("Welcome back! 🚀")
       navigate("/")
-    } catch {
-      toast.error("Invalid credentials ❌")
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message ?? "Invalid credentials ❌")
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleGoogleLogin = async (credential: string) => {
+    const res = await API.post("/auth/google", { credential, role: "customer" })
+    login(res.data.user, res.data.token)
+    toast.success("Signed in with Google ✨")
+    navigate("/")
   }
 
   return (
@@ -90,6 +98,14 @@ export default function Login() {
           </div>
 
           <div className="space-y-4">
+            <GoogleSignInButton text="signin_with" onCredential={handleGoogleLogin} />
+
+            <div className="flex items-center gap-3 py-1">
+              <div className="h-px flex-1 bg-gray-100" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-gray-300">Or</span>
+              <div className="h-px flex-1 bg-gray-100" />
+            </div>
+
             <div>
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Email</label>
               <input
@@ -102,7 +118,10 @@ export default function Login() {
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Password</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Password</label>
+                <Link to="/forgot-password" className="text-xs text-violet-500 font-semibold hover:underline">Forgot password?</Link>
+              </div>
               <div className="relative mt-1.5">
                 <input
                   type={showPw ? "text" : "password"}
@@ -134,6 +153,14 @@ export default function Login() {
                 Signing in...
               </span>
             ) : "Sign In →"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { toast.success("Browsing as guest"); navigate("/") }}
+            className="mt-3 w-full border-2 border-gray-100 text-gray-700 py-3.5 rounded-xl font-black text-sm hover:border-violet-200 hover:text-violet-600 transition-all"
+          >
+            Continue as Guest
           </button>
 
           <p className="text-center text-sm text-gray-500 mt-6">

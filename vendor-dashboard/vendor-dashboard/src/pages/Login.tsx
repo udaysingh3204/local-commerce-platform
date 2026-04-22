@@ -1,9 +1,10 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { useVendor } from "../context/VendorContext"
+import GoogleSignInButton from "../components/GoogleSignInButton"
 
 export default function Login() {
-  const { login } = useVendor()
+  const { login, loginWithGoogle } = useVendor()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -19,6 +20,16 @@ export default function Login() {
       setError(err?.response?.data?.message || err?.message || "Login failed")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleGoogleLogin = async (credential: string) => {
+    setError("")
+    try {
+      await loginWithGoogle(credential)
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || "Google sign-in failed")
+      throw err
     }
   }
 
@@ -60,6 +71,15 @@ export default function Login() {
             </div>
           )}
 
+          <div className="space-y-4">
+            <GoogleSignInButton text="signin_with" theme="dark" onCredential={handleGoogleLogin} />
+
+            <div className="flex items-center gap-3 py-1">
+              <div className="h-px flex-1 bg-white/10" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-gray-600">Or</span>
+              <div className="h-px flex-1 bg-white/10" />
+            </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Email</label>
@@ -91,6 +111,7 @@ export default function Login() {
               {loading ? "Signing in..." : "Access Dashboard →"}
             </button>
           </form>
+          </div>
 
           <p className="text-center text-gray-600 text-sm mt-6">
             New vendor?{" "}

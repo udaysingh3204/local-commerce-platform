@@ -1,11 +1,8 @@
 import { useEffect, useState, useCallback } from "react"
 import { toast } from "sonner"
 import API from "../api/api"
-import { io } from "socket.io-client"
+import socket from "../socket/socket"
 import { useVendor } from "../context/VendorContext"
-
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? "https://local-commerce-platform-production.up.railway.app"
-const socket = io(SOCKET_URL, { autoConnect: true })
 
 const STATUS_FLOW: Record<string, { next: string; label: string; cls: string } | null> = {
   pending:          { next: "accepted",         label: "Accept Order",      cls: "bg-blue-600 hover:bg-blue-500" },
@@ -23,6 +20,12 @@ const STATUS_BADGE: Record<string, string> = {
   out_for_delivery: "bg-orange-500/15 text-orange-400 border-orange-500/30",
   delivered:        "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
   cancelled:        "bg-red-500/15 text-red-400 border-red-500/30",
+}
+
+const PAYMENT_BADGE: Record<string, string> = {
+  paid: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  pending: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+  failed: "bg-red-500/15 text-red-400 border-red-500/30",
 }
 
 const TABS = ["All", "Pending", "Accepted", "Preparing", "Out for Delivery", "Delivered"]
@@ -151,7 +154,7 @@ export default function Orders() {
                   className="px-5 py-4 flex items-center gap-4 cursor-pointer select-none"
                   onClick={() => setExpanded(isOpen ? null : order._id)}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-gray-800 flex items-center justify-center flex-shrink-0 text-xs font-black text-gray-300">
+                  <div className="w-10 h-10 rounded-xl bg-gray-800 flex items-center justify-center shrink-0 text-xs font-black text-gray-300">
                     #{order._id?.slice(-2)}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -165,7 +168,7 @@ export default function Orders() {
                       {order.items?.length ?? 0} item{order.items?.length !== 1 ? "s" : ""} &middot; {new Date(order.createdAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
-                  <div className="text-right flex-shrink-0 flex items-center gap-3">
+                  <div className="text-right shrink-0 flex items-center gap-3">
                     <p className="text-base font-black text-white">&#8377;{order.totalAmount}</p>
                     <span className={`text-gray-600 text-xs transition-transform duration-200 inline-block ${isOpen ? "-rotate-180" : ""}`}>▼</span>
                   </div>
@@ -175,13 +178,26 @@ export default function Orders() {
                 {isOpen && (
                   <div className="border-t border-gray-800">
                     <div className="px-5 py-4 space-y-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${PAYMENT_BADGE[order.paymentStatus] ?? PAYMENT_BADGE.pending}`}>
+                          Payment: {order.paymentStatus || "pending"}
+                        </span>
+                        <span className="text-xs text-gray-500 capitalize">
+                          Method: {order.paymentMethod || "cod"}
+                        </span>
+                      </div>
+                      {order.paymentFailureReason && (
+                        <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                          {order.paymentFailureReason}
+                        </div>
+                      )}
                       <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Order Items</p>
                       {order.items?.map((item: any, i: number) => (
                         <div key={i} className="flex items-center gap-3">
                           {item.image ? (
-                            <img src={item.image} alt={item.name} className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
+                            <img src={item.image} alt={item.name} className="w-10 h-10 rounded-xl object-cover shrink-0" />
                           ) : (
-                            <div className="w-10 h-10 rounded-xl bg-gray-800 flex-shrink-0 flex items-center justify-center text-sm">📦</div>
+                            <div className="w-10 h-10 rounded-xl bg-gray-800 shrink-0 flex items-center justify-center text-sm">📦</div>
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-white truncate">{item.name ?? item.productId?.name ?? "Product"}</p>

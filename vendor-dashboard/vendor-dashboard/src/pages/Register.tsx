@@ -2,6 +2,8 @@ import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import API from "../api/api"
+import GoogleSignInButton from "../components/GoogleSignInButton"
+import { useVendor } from "../context/VendorContext"
 
 function PasswordStrength({ password }: { password: string }) {
   const checks = [
@@ -48,6 +50,7 @@ const PERKS = [
 
 export default function Register() {
   const navigate = useNavigate()
+  const { loginWithGoogle } = useVendor()
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirm: "" })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -76,6 +79,17 @@ export default function Register() {
       setError(err?.response?.data?.message || "Registration failed. Please try again.")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleGoogleRegister = async (credential: string) => {
+    try {
+      await loginWithGoogle(credential)
+      toast.success("Vendor account connected with Google")
+      navigate("/dashboard")
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || "Google signup failed")
+      throw err
     }
   }
 
@@ -158,6 +172,16 @@ export default function Register() {
               {error}
             </div>
           )}
+
+          <div className="mb-5 space-y-4">
+            <GoogleSignInButton text="signup_with" theme="dark" onCredential={handleGoogleRegister} />
+
+            <div className="flex items-center gap-3 py-1">
+              <div className="h-px flex-1 bg-white/10" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-gray-600">Or</span>
+              <div className="h-px flex-1 bg-white/10" />
+            </div>
+          </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">

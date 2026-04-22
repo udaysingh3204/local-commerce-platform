@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "LocalMart Driver",
+    "slug": "localmart-driver",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "LocalMart Driver needs your location to send live delivery tracking updates.",
+          "locationWhenInUsePermission": "LocalMart Driver needs your location while delivering orders."
+        }
+      ]
+    ],
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#030712"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "LocalMart Driver needs your location while delivering orders.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "LocalMart Driver needs your location to send live delivery tracking updates."
+      }
+    }
+  }
+}
