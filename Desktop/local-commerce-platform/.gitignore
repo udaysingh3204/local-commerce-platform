@@ -1,0 +1,49 @@
+# Node and build
+node_modules/
+dist/
+build/
+.vite/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# IDE / editor and temp
+.idea/
+.cache/
+.expo/
+.expo-shared/
+
+# System folders accidentally added
+AppData/
+"3D Objects"/
+Desktop/
+Documents/
+Downloads/
+Pictures/
+Videos/
+OneDrive/
+
+# Personal/workflow artifacts
+.gemini/
+.antigravity/
+.copilot/
+.codeium/
+.gk/
+.gitconfig
+
+# SSH and secrets
+.ssh/
+*.pem
+*.key
+
+# NPM lock at workspace root might differ
+package-lock.json

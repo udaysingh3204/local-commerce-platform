@@ -1,5 +1,39 @@
 {
+  "name": "local-commerce-platform-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n backend,customer,admin,delivery -c green,cyan,magenta,yellow \"node ./scripts/run-dev-service.js backend 5000 ./local-commerce-platform/backend npm run dev\" \"node ./scripts/run-dev-service.js customer 5173 ./local-commerce-platform/customer-app npm run dev\" \"node ./scripts/run-dev-service.js admin 5174 ./local-commerce-platform/admin-dashboard/admin-dashboard npm run dev\" \"node ./scripts/run-dev-service.js delivery 5175 ./local-commerce-platform/delivery-dashboard npm run dev\"",
+    "dev:all": "concurrently -n backend,customer,admin,delivery,supplier,vendor -c green,cyan,magenta,yellow,blue,white \"node ./scripts/run-dev-service.js backend 5000 ./local-commerce-platform/backend npm run dev\" \"node ./scripts/run-dev-service.js customer 5173 ./local-commerce-platform/customer-app npm run dev\" \"node ./scripts/run-dev-service.js admin 5174 ./local-commerce-platform/admin-dashboard/admin-dashboard npm run dev\" \"node ./scripts/run-dev-service.js delivery 5175 ./local-commerce-platform/delivery-dashboard npm run dev\" \"node ./scripts/run-dev-service.js supplier 5176 ./local-commerce-platform/supplier-dashboard npm run dev\" \"node ./scripts/run-dev-service.js vendor 5177 ./local-commerce-platform/vendor-dashboard/vendor-dashboard npm run dev\"",
+    "seed:demo": "npm --prefix ./local-commerce-platform/backend run seed:demo",
+    "seed:promotions": "npm --prefix ./local-commerce-platform/backend run seed:promotions",
+    "migrate:users": "npm --prefix ./local-commerce-platform/backend run migrate:users",
+    "smoke:api": "npm --prefix ./local-commerce-platform/backend run smoke:api",
+    "mobile:install": "npm --prefix ./local-commerce-platform/mobile install",
+    "mobile:customer": "npm --prefix ./local-commerce-platform/mobile/customer-app-native run start",
+    "mobile:driver": "npm --prefix ./local-commerce-platform/mobile/driver-app-native run start",
+    "mobile:android:customer": "npm --prefix ./local-commerce-platform/mobile/customer-app-native run android",
+    "mobile:android:driver": "npm --prefix ./local-commerce-platform/mobile/driver-app-native run android",
+    "mobile:ios:customer": "npm --prefix ./local-commerce-platform/mobile/customer-app-native run ios",
+    "mobile:ios:driver": "npm --prefix ./local-commerce-platform/mobile/driver-app-native run ios",
+    "dev:customer": "npm --prefix ./local-commerce-platform/customer-app run dev",
+    "dev:admin": "npm --prefix ./local-commerce-platform/admin-dashboard/admin-dashboard run dev",
+    "dev:delivery": "npm --prefix ./local-commerce-platform/delivery-dashboard run dev",
+    "dev:supplier": "npm --prefix ./local-commerce-platform/supplier-dashboard run dev",
+    "dev:vendor": "npm --prefix ./local-commerce-platform/vendor-dashboard/vendor-dashboard run dev",
+    "build:customer": "npm --prefix ./local-commerce-platform/customer-app run build",
+    "build:admin": "npm --prefix ./local-commerce-platform/admin-dashboard/admin-dashboard run build",
+    "build:delivery": "npm --prefix ./local-commerce-platform/delivery-dashboard run build",
+    "build:supplier": "npm --prefix ./local-commerce-platform/supplier-dashboard run build",
+    "build:vendor": "npm --prefix ./local-commerce-platform/vendor-dashboard/vendor-dashboard run build",
+    "release:check": "npm run build:customer && npm run build:admin && npm run build:delivery && npm run build:supplier && npm run build:vendor && npm run smoke:api",
+    "preview:customer": "node ./scripts/run-dev-service.js customer-preview 4173 ./local-commerce-platform/customer-app npm run preview",
+    "preview:admin": "node ./scripts/run-dev-service.js admin-preview 4174 ./local-commerce-platform/admin-dashboard/admin-dashboard npm run preview",
+    "preview:delivery": "node ./scripts/run-dev-service.js delivery-preview 4175 ./local-commerce-platform/delivery-dashboard npm run preview",
+    "preview:supplier": "node ./scripts/run-dev-service.js supplier-preview 4176 ./local-commerce-platform/supplier-dashboard npm run preview",
+    "preview:vendor": "node ./scripts/run-dev-service.js vendor-preview 4177 ./local-commerce-platform/vendor-dashboard/vendor-dashboard npm run preview"
+  },
   "dependencies": {
-    "@tailwindcss/vite": "^4.2.2"
+    "@tailwindcss/vite": "^4.2.2",
+    "concurrently": "^9.2.1"
   }
 }
