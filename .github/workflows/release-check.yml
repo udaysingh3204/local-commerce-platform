@@ -1,0 +1,125 @@
+name: Release Check
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  install-deps:
+    name: Install dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install backend dependencies
+        run: npm --prefix ./backend ci
+
+      - name: Install customer dependencies
+        run: npm --prefix ./customer-app ci
+
+      - name: Install admin dependencies
+        run: npm --prefix ./admin-dashboard/admin-dashboard ci
+
+      - name: Install delivery dependencies
+        run: npm --prefix ./delivery-dashboard ci
+
+      - name: Install supplier dependencies
+        run: npm --prefix ./supplier-dashboard ci
+
+      - name: Install vendor dependencies
+        run: npm --prefix ./vendor-dashboard/vendor-dashboard ci
+
+  build-customer:
+    name: Build Customer
+    runs-on: ubuntu-latest
+    needs: install-deps
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install customer dependencies
+        run: npm --prefix ./customer-app ci
+      - name: Build customer
+        run: npm --prefix ./customer-app run build
+
+  build-admin:
+    name: Build Admin
+    runs-on: ubuntu-latest
+    needs: install-deps
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install admin dependencies
+        run: npm --prefix ./admin-dashboard/admin-dashboard ci
+      - name: Build admin
+        run: npm --prefix ./admin-dashboard/admin-dashboard run build
+
+  build-delivery:
+    name: Build Delivery
+    runs-on: ubuntu-latest
+    needs: install-deps
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install delivery dependencies
+        run: npm --prefix ./delivery-dashboard ci
+      - name: Build delivery
+        run: npm --prefix ./delivery-dashboard run build
+
+  build-supplier:
+    name: Build Supplier
+    runs-on: ubuntu-latest
+    needs: install-deps
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install supplier dependencies
+        run: npm --prefix ./supplier-dashboard ci
+      - name: Build supplier
+        run: npm --prefix ./supplier-dashboard run build
+
+  build-vendor:
+    name: Build Vendor
+    runs-on: ubuntu-latest
+    needs: install-deps
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install vendor dependencies
+        run: npm --prefix ./vendor-dashboard/vendor-dashboard ci
+      - name: Build vendor
+        run: npm --prefix ./vendor-dashboard/vendor-dashboard run build

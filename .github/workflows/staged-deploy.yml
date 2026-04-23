@@ -1,0 +1,201 @@
+name: Staged Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Deployment target label"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - staging
+          - production
+      couponDaysBack:
+        description: "Coupon analytics validation window"
+        required: true
+        default: "30"
+        type: choice
+        options:
+          - "7"
+          - "30"
+          - "90"
+
+jobs:
+  release-check:
+    name: Release Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install backend dependencies
+        run: npm --prefix ./backend ci
+
+      - name: Install customer dependencies
+        run: npm --prefix ./customer-app ci
+
+      - name: Install admin dependencies
+        run: npm --prefix ./admin-dashboard/admin-dashboard ci
+
+      - name: Install delivery dependencies
+        run: npm --prefix ./delivery-dashboard ci
+
+      - name: Install supplier dependencies
+        run: npm --prefix ./supplier-dashboard ci
+
+      - name: Install vendor dependencies
+        run: npm --prefix ./vendor-dashboard/vendor-dashboard ci
+
+      - name: Build all frontends
+        run: |
+          npm --prefix ./customer-app run build
+          npm --prefix ./admin-dashboard/admin-dashboard run build
+          npm --prefix ./delivery-dashboard run build
+          npm --prefix ./supplier-dashboard run build
+          npm --prefix ./vendor-dashboard/vendor-dashboard run build
+
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    needs: release-check
+    steps:
+      - name: Validate required backend deploy secrets
+        run: |
+          test -n "${{ secrets.BACKEND_DEPLOY_HOOK_URL }}" || (echo "Missing BACKEND_DEPLOY_HOOK_URL" && exit 1)
+          test -n "${{ secrets.API_BASE_URL }}" || (echo "Missing API_BASE_URL" && exit 1)
+
+      - name: Trigger backend deploy
+        run: curl -fsS -X POST "${{ secrets.BACKEND_DEPLOY_HOOK_URL }}"
+
+      - name: Wait for backend health
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS "$API_BASE_URL/health" > /dev/null; then
+              echo "Backend is healthy"
+              exit 0
+            fi
+            echo "Waiting for backend health... attempt $i"
+            sleep 10
+          done
+          echo "Backend did not become healthy in time"
+          exit 1
+
+  deploy-frontends:
+    name: Deploy Frontends
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+    steps:
+      - name: Trigger customer deploy
+        if: ${{ secrets.CUSTOMER_DEPLOY_HOOK_URL != '' }}
+        run: curl -fsS -X POST "${{ secrets.CUSTOMER_DEPLOY_HOOK_URL }}"
+
+      - name: Trigger admin deploy
+        if: ${{ secrets.ADMIN_DEPLOY_HOOK_URL != '' }}
+        run: curl -fsS -X POST "${{ secrets.ADMIN_DEPLOY_HOOK_URL }}"
+
+      - name: Trigger delivery deploy
+        if: ${{ secrets.DELIVERY_DEPLOY_HOOK_URL != '' }}
+        run: curl -fsS -X POST "${{ secrets.DELIVERY_DEPLOY_HOOK_URL }}"
+
+      - name: Trigger supplier deploy
+        if: ${{ secrets.SUPPLIER_DEPLOY_HOOK_URL != '' }}
+        run: curl -fsS -X POST "${{ secrets.SUPPLIER_DEPLOY_HOOK_URL }}"
+
+      - name: Trigger vendor deploy
+        if: ${{ secrets.VENDOR_DEPLOY_HOOK_URL != '' }}
+        run: curl -fsS -X POST "${{ secrets.VENDOR_DEPLOY_HOOK_URL }}"
+
+  post-deploy-verify:
+    name: Post Deploy Verify
+    runs-on: ubuntu-latest
+    needs: deploy-frontends
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install backend dependencies
+        run: npm --prefix ./backend ci
+
+      - name: Run production API smoke
+        env:
+          SMOKE_BASE_URL: ${{ secrets.API_BASE_URL }}
+          SMOKE_CUSTOMER_EMAIL: ${{ secrets.SMOKE_CUSTOMER_EMAIL }}
+          SMOKE_CUSTOMER_PASSWORD: ${{ secrets.SMOKE_CUSTOMER_PASSWORD }}
+          SMOKE_DRIVER_EMAIL: ${{ secrets.SMOKE_DRIVER_EMAIL }}
+          SMOKE_DRIVER_PASSWORD: ${{ secrets.SMOKE_DRIVER_PASSWORD }}
+          SMOKE_ADMIN_EMAIL: ${{ secrets.SMOKE_ADMIN_EMAIL }}
+          SMOKE_ADMIN_PASSWORD: ${{ secrets.SMOKE_ADMIN_PASSWORD }}
+        run: npm --prefix ./backend run smoke:api
+
+      - name: Verify frontend URLs
+        env:
+          CUSTOMER_BASE_URL: ${{ secrets.CUSTOMER_BASE_URL }}
+          ADMIN_BASE_URL: ${{ secrets.ADMIN_BASE_URL }}
+          DELIVERY_BASE_URL: ${{ secrets.DELIVERY_BASE_URL }}
+          SUPPLIER_BASE_URL: ${{ secrets.SUPPLIER_BASE_URL }}
+          VENDOR_BASE_URL: ${{ secrets.VENDOR_BASE_URL }}
+        run: |
+          check_url() {
+            local name="$1"
+            local url="$2"
+
+            if [ -z "$url" ]; then
+              echo "Skipping $name URL check (secret not set)"
+              return 0
+            fi
+
+            for i in $(seq 1 30); do
+              code=$(curl -s -o /dev/null -w "%{http_code}" "$url" || true)
+              if [ "$code" -ge 200 ] && [ "$code" -lt 500 ]; then
+                echo "$name is reachable ($code): $url"
+                return 0
+              fi
+              echo "Waiting for $name availability... attempt $i (last code: $code)"
+              sleep 10
+            done
+
+            echo "$name did not become reachable: $url"
+            return 1
+          }
+
+          check_url "Customer" "$CUSTOMER_BASE_URL"
+          check_url "Admin" "$ADMIN_BASE_URL"
+          check_url "Delivery" "$DELIVERY_BASE_URL"
+          check_url "Supplier" "$SUPPLIER_BASE_URL"
+          check_url "Vendor" "$VENDOR_BASE_URL"
+
+      - name: Validate coupon analytics endpoint
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          ADMIN_EMAIL: ${{ secrets.SMOKE_ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.SMOKE_ADMIN_PASSWORD }}
+          COUPON_DAYS_BACK: ${{ github.event.inputs.couponDaysBack }}
+        run: |
+          ADMIN_TOKEN=$(curl -fsS -X POST "$API_BASE_URL/api/auth/login" \
+            -H "Content-Type: application/json" \
+            -d "{\"email\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\"}" | \
+            node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync(0,'utf8'));process.stdout.write(d.token||'')")
+          test -n "$ADMIN_TOKEN" || (echo "Failed to login admin for coupon analytics check" && exit 1)
+
+          curl -fsS "$API_BASE_URL/api/analytics/dashboard?daysBack=$COUPON_DAYS_BACK" \
+            -H "Authorization: Bearer $ADMIN_TOKEN" > /dev/null
+
+          curl -fsS "$API_BASE_URL/api/analytics/coupons/export?daysBack=$COUPON_DAYS_BACK" \
+            -H "Authorization: Bearer $ADMIN_TOKEN" > /dev/null
+
+          echo "Coupon analytics and CSV export checks passed"
