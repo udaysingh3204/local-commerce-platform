@@ -54,10 +54,6 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - name: Install root dependencies
-        run: npm ci
-      - name: Install customer dependencies
-        run: npm --prefix ./local-commerce-platform/customer-app ci
       - name: Build customer
         run: npm run build:customer
 
@@ -73,10 +69,6 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - name: Install root dependencies
-        run: npm ci
-      - name: Install admin dependencies
-        run: npm --prefix ./local-commerce-platform/admin-dashboard/admin-dashboard ci
       - name: Build admin
         run: npm run build:admin
 
@@ -92,10 +84,6 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - name: Install root dependencies
-        run: npm ci
-      - name: Install delivery dependencies
-        run: npm --prefix ./local-commerce-platform/delivery-dashboard ci
       - name: Build delivery
         run: npm run build:delivery
 
@@ -111,10 +99,6 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - name: Install root dependencies
-        run: npm ci
-      - name: Install supplier dependencies
-        run: npm --prefix ./local-commerce-platform/supplier-dashboard ci
       - name: Build supplier
         run: npm run build:supplier
 
@@ -130,9 +114,5 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - name: Install root dependencies
-        run: npm ci
-      - name: Install vendor dependencies
-        run: npm --prefix ./local-commerce-platform/vendor-dashboard/vendor-dashboard ci
       - name: Build vendor
         run: npm run build:vendor
