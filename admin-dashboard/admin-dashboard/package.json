@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "preinstall": "node -e \"const fs=require('fs'); try{const p='./node_modules/tailwindcss-oxide/bin/tailwindcss-oxide.win32-x64-msvc.node'; if(fs.existsSync(p)){try{fs.chmodSync(p,0o666);}catch(e){} fs.unlinkSync(p); console.log('removed',p);} }catch(e){console.warn('preinstall: cannot remove oxide',e && e.message);} \"",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
