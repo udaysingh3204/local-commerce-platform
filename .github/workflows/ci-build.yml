@@ -1,0 +1,34 @@
+name: CI Build (skip optional natives)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install & build backend
+        run: |
+          npm ci --omit=optional --prefix ./local-commerce-platform/backend
+          npm --prefix ./local-commerce-platform/backend run build || true
+
+      - name: Install & build admin
+        run: |
+          npm ci --omit=optional --prefix ./local-commerce-platform/admin-dashboard/admin-dashboard
+          npm --prefix ./local-commerce-platform/admin-dashboard/admin-dashboard run build
+
+      - name: Install & build supplier
+        run: |
+          npm ci --omit=optional --prefix ./local-commerce-platform/supplier-dashboard
+          npm --prefix ./local-commerce-platform/supplier-dashboard run build

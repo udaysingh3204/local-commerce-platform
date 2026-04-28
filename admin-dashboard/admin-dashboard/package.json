@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "preinstall": "node -e \"const fs=require('fs'); try{const p='./node_modules/tailwindcss-oxide/bin/tailwindcss-oxide.win32-x64-msvc.node'; if(fs.existsSync(p)){try{fs.chmodSync(p,0o666);}catch(e){} fs.unlinkSync(p); console.log('removed',p);} }catch(e){console.warn('preinstall: cannot remove oxide',e && e.message);} \"",
+    "preinstall": "node -e \"const fs=require('fs'),path=require('path'); function walk(d){try{for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name); if(e.isDirectory()){walk(p);} else if(e.isFile() && /tailwindcss-oxide.*\\.node$/i.test(e.name)){ try{fs.chmodSync(p,0o666);}catch(_){} try{fs.unlinkSync(p); console.log('removed',p);}catch(err){console.warn('cannot remove',p,err&&err.message);} }}}catch(_){} } try{ const nm=path.join(process.cwd(),'node_modules'); if(fs.existsSync(nm)) walk(nm); }catch(e){console.warn('preinstall error',e&&e.message);} \"",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
