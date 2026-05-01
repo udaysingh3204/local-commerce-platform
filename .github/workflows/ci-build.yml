@@ -1,8 +1,8 @@
-name: CI Build (skip optional natives)
+name: CI Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
     branches: [ main ]
 
@@ -20,15 +20,30 @@ jobs:
 
       - name: Install & build backend
         run: |
-          npm ci --omit=optional --prefix ./local-commerce-platform/backend
-          npm --prefix ./local-commerce-platform/backend run build || true
+          npm ci --omit=optional --prefix ./backend
+          npm --prefix ./backend run build || true
+
+      - name: Install & build customer
+        run: |
+          npm ci --omit=optional --prefix ./customer-app
+          npm --prefix ./customer-app run build
 
       - name: Install & build admin
         run: |
-          npm ci --omit=optional --prefix ./local-commerce-platform/admin-dashboard/admin-dashboard
-          npm --prefix ./local-commerce-platform/admin-dashboard/admin-dashboard run build
+          npm ci --omit=optional --prefix ./admin-dashboard/admin-dashboard
+          npm --prefix ./admin-dashboard/admin-dashboard run build
+
+      - name: Install & build delivery
+        run: |
+          npm ci --omit=optional --prefix ./delivery-dashboard
+          npm --prefix ./delivery-dashboard run build
 
       - name: Install & build supplier
         run: |
-          npm ci --omit=optional --prefix ./local-commerce-platform/supplier-dashboard
-          npm --prefix ./local-commerce-platform/supplier-dashboard run build
+          npm ci --omit=optional --prefix ./supplier-dashboard
+          npm --prefix ./supplier-dashboard run build
+
+      - name: Install & build vendor
+        run: |
+          npm ci --omit=optional --prefix ./vendor-dashboard/vendor-dashboard
+          npm --prefix ./vendor-dashboard/vendor-dashboard run build

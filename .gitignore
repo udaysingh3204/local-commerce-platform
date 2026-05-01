@@ -4,3 +4,12 @@ node_modules
 .env.production
 dist
 build
+
+# Stray nested workspace copies — never commit these
+Desktop/
+local-commerce-platform/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
