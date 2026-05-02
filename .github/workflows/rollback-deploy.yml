@@ -59,26 +59,32 @@ jobs:
     name: Rollback Frontends
     runs-on: ubuntu-latest
     needs: rollback-backend
+    env:
+      CUSTOMER_HOOK: ${{ secrets.CUSTOMER_ROLLBACK_HOOK_URL }}
+      ADMIN_HOOK: ${{ secrets.ADMIN_ROLLBACK_HOOK_URL }}
+      DELIVERY_HOOK: ${{ secrets.DELIVERY_ROLLBACK_HOOK_URL }}
+      SUPPLIER_HOOK: ${{ secrets.SUPPLIER_ROLLBACK_HOOK_URL }}
+      VENDOR_HOOK: ${{ secrets.VENDOR_ROLLBACK_HOOK_URL }}
     steps:
       - name: Trigger customer rollback
-        if: ${{ secrets.CUSTOMER_ROLLBACK_HOOK_URL != '' }}
-        run: curl -fsS -X POST "${{ secrets.CUSTOMER_ROLLBACK_HOOK_URL }}"
+        if: env.CUSTOMER_HOOK != ''
+        run: curl -fsS -X POST "$CUSTOMER_HOOK"
 
       - name: Trigger admin rollback
-        if: ${{ secrets.ADMIN_ROLLBACK_HOOK_URL != '' }}
-        run: curl -fsS -X POST "${{ secrets.ADMIN_ROLLBACK_HOOK_URL }}"
+        if: env.ADMIN_HOOK != ''
+        run: curl -fsS -X POST "$ADMIN_HOOK"
 
       - name: Trigger delivery rollback
-        if: ${{ secrets.DELIVERY_ROLLBACK_HOOK_URL != '' }}
-        run: curl -fsS -X POST "${{ secrets.DELIVERY_ROLLBACK_HOOK_URL }}"
+        if: env.DELIVERY_HOOK != ''
+        run: curl -fsS -X POST "$DELIVERY_HOOK"
 
       - name: Trigger supplier rollback
-        if: ${{ secrets.SUPPLIER_ROLLBACK_HOOK_URL != '' }}
-        run: curl -fsS -X POST "${{ secrets.SUPPLIER_ROLLBACK_HOOK_URL }}"
+        if: env.SUPPLIER_HOOK != ''
+        run: curl -fsS -X POST "$SUPPLIER_HOOK"
 
       - name: Trigger vendor rollback
-        if: ${{ secrets.VENDOR_ROLLBACK_HOOK_URL != '' }}
-        run: curl -fsS -X POST "${{ secrets.VENDOR_ROLLBACK_HOOK_URL }}"
+        if: env.VENDOR_HOOK != ''
+        run: curl -fsS -X POST "$VENDOR_HOOK"
 
   post-rollback-verify:
     name: Post Rollback Verify

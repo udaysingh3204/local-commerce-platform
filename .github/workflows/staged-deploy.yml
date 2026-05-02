@@ -93,26 +93,32 @@ jobs:
     name: Deploy Frontends
     runs-on: ubuntu-latest
     needs: deploy-backend
+    env:
+      CUSTOMER_HOOK: ${{ secrets.CUSTOMER_DEPLOY_HOOK_URL }}
+      ADMIN_HOOK: ${{ secrets.ADMIN_DEPLOY_HOOK_URL }}
+      DELIVERY_HOOK: ${{ secrets.DELIVERY_DEPLOY_HOOK_URL }}
+      SUPPLIER_HOOK: ${{ secrets.SUPPLIER_DEPLOY_HOOK_URL }}
+      VENDOR_HOOK: ${{ secrets.VENDOR_DEPLOY_HOOK_URL }}
     steps:
       - name: Trigger customer deploy
-        if: ${{ secrets.CUSTOMER_DEPLOY_HOOK_URL != '' }}
-        run: curl -fsS -X POST "${{ secrets.CUSTOMER_DEPLOY_HOOK_URL }}"
+        if: env.CUSTOMER_HOOK != ''
+        run: curl -fsS -X POST "$CUSTOMER_HOOK"
 
       - name: Trigger admin deploy
-        if: ${{ secrets.ADMIN_DEPLOY_HOOK_URL != '' }}
-        run: curl -fsS -X POST "${{ secrets.ADMIN_DEPLOY_HOOK_URL }}"
+        if: env.ADMIN_HOOK != ''
+        run: curl -fsS -X POST "$ADMIN_HOOK"
 
       - name: Trigger delivery deploy
-        if: ${{ secrets.DELIVERY_DEPLOY_HOOK_URL != '' }}
-        run: curl -fsS -X POST "${{ secrets.DELIVERY_DEPLOY_HOOK_URL }}"
+        if: env.DELIVERY_HOOK != ''
+        run: curl -fsS -X POST "$DELIVERY_HOOK"
 
       - name: Trigger supplier deploy
-        if: ${{ secrets.SUPPLIER_DEPLOY_HOOK_URL != '' }}
-        run: curl -fsS -X POST "${{ secrets.SUPPLIER_DEPLOY_HOOK_URL }}"
+        if: env.SUPPLIER_HOOK != ''
+        run: curl -fsS -X POST "$SUPPLIER_HOOK"
 
       - name: Trigger vendor deploy
-        if: ${{ secrets.VENDOR_DEPLOY_HOOK_URL != '' }}
-        run: curl -fsS -X POST "${{ secrets.VENDOR_DEPLOY_HOOK_URL }}"
+        if: env.VENDOR_HOOK != ''
+        run: curl -fsS -X POST "$VENDOR_HOOK"
 
   post-deploy-verify:
     name: Post Deploy Verify
