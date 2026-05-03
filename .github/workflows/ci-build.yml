@@ -10,9 +10,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # Suppress npm funding/audit noise in CI logs
       npm_config_fund: false
       npm_config_audit: false
+      npm_config_optional: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,6 +21,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+
+      - name: Show npm config (debug)
+        run: npm config list
 
       # ── Backend (no native binaries needed) ──────────────────────────────
       - name: Install backend
