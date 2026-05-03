@@ -9,6 +9,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Suppress npm funding/audit noise in CI logs
+      npm_config_fund: false
+      npm_config_audit: false
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,32 +22,41 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Install & build backend
-        run: |
-          npm ci --omit=optional --prefix ./backend
-          npm --prefix ./backend run build || true
+      # ── Backend (no native binaries needed) ──────────────────────────────
+      - name: Install backend
+        run: npm ci --omit=optional --prefix ./backend
 
-      - name: Install & build customer
-        run: |
-          npm ci --prefix ./customer-app
-          npm --prefix ./customer-app run build
+      # ── Customer app ─────────────────────────────────────────────────────
+      - name: Install customer
+        run: npm ci --include=optional --prefix ./customer-app
 
-      - name: Install & build admin
-        run: |
-          npm ci --prefix ./admin-dashboard/admin-dashboard
-          npm --prefix ./admin-dashboard/admin-dashboard run build
+      - name: Build customer
+        run: npm --prefix ./customer-app run build
 
-      - name: Install & build delivery
-        run: |
-          npm ci --prefix ./delivery-dashboard
-          npm --prefix ./delivery-dashboard run build
+      # ── Admin dashboard ──────────────────────────────────────────────────
+      - name: Install admin
+        run: npm ci --include=optional --prefix ./admin-dashboard/admin-dashboard
 
-      - name: Install & build supplier
-        run: |
-          npm ci --prefix ./supplier-dashboard
-          npm --prefix ./supplier-dashboard run build
+      - name: Build admin
+        run: npm --prefix ./admin-dashboard/admin-dashboard run build
 
-      - name: Install & build vendor
-        run: |
-          npm ci --prefix ./vendor-dashboard/vendor-dashboard
-          npm --prefix ./vendor-dashboard/vendor-dashboard run build
+      # ── Delivery dashboard ───────────────────────────────────────────────
+      - name: Install delivery
+        run: npm ci --include=optional --prefix ./delivery-dashboard
+
+      - name: Build delivery
+        run: npm --prefix ./delivery-dashboard run build
+
+      # ── Supplier dashboard ───────────────────────────────────────────────
+      - name: Install supplier
+        run: npm ci --include=optional --prefix ./supplier-dashboard
+
+      - name: Build supplier
+        run: npm --prefix ./supplier-dashboard run build
+
+      # ── Vendor dashboard ─────────────────────────────────────────────────
+      - name: Install vendor
+        run: npm ci --include=optional --prefix ./vendor-dashboard/vendor-dashboard
+
+      - name: Build vendor
+        run: npm --prefix ./vendor-dashboard/vendor-dashboard run build
