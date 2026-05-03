@@ -28,35 +28,35 @@ jobs:
 
       # ── Customer app ─────────────────────────────────────────────────────
       - name: Install customer
-        run: npm ci --include=optional --prefix ./customer-app
+        run: npm install --prefix ./customer-app
 
       - name: Build customer
         run: npm --prefix ./customer-app run build
 
       # ── Admin dashboard ──────────────────────────────────────────────────
       - name: Install admin
-        run: npm ci --include=optional --prefix ./admin-dashboard/admin-dashboard
+        run: npm install --prefix ./admin-dashboard/admin-dashboard
 
       - name: Build admin
         run: npm --prefix ./admin-dashboard/admin-dashboard run build
 
       # ── Delivery dashboard ───────────────────────────────────────────────
       - name: Install delivery
-        run: npm ci --include=optional --prefix ./delivery-dashboard
+        run: npm install --prefix ./delivery-dashboard
 
       - name: Build delivery
         run: npm --prefix ./delivery-dashboard run build
 
       # ── Supplier dashboard ───────────────────────────────────────────────
       - name: Install supplier
-        run: npm ci --include=optional --prefix ./supplier-dashboard
+        run: npm install --prefix ./supplier-dashboard
 
       - name: Build supplier
         run: npm --prefix ./supplier-dashboard run build
 
       # ── Vendor dashboard ─────────────────────────────────────────────────
       - name: Install vendor
-        run: npm ci --include=optional --prefix ./vendor-dashboard/vendor-dashboard
+        run: npm install --prefix ./vendor-dashboard/vendor-dashboard
 
       - name: Build vendor
         run: npm --prefix ./vendor-dashboard/vendor-dashboard run build
