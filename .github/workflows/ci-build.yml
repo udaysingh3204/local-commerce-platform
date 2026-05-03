@@ -28,35 +28,45 @@ jobs:
 
       # ── Customer app ─────────────────────────────────────────────────────
       - name: Install customer
-        run: npm install --prefix ./customer-app
+        working-directory: ./customer-app
+        run: rm -f package-lock.json && npm install
 
       - name: Build customer
-        run: npm --prefix ./customer-app run build
+        working-directory: ./customer-app
+        run: npm run build
 
       # ── Admin dashboard ──────────────────────────────────────────────────
       - name: Install admin
-        run: npm install --prefix ./admin-dashboard/admin-dashboard
+        working-directory: ./admin-dashboard/admin-dashboard
+        run: rm -f package-lock.json && npm install
 
       - name: Build admin
-        run: npm --prefix ./admin-dashboard/admin-dashboard run build
+        working-directory: ./admin-dashboard/admin-dashboard
+        run: npm run build
 
       # ── Delivery dashboard ───────────────────────────────────────────────
       - name: Install delivery
-        run: npm install --prefix ./delivery-dashboard
+        working-directory: ./delivery-dashboard
+        run: rm -f package-lock.json && npm install
 
       - name: Build delivery
-        run: npm --prefix ./delivery-dashboard run build
+        working-directory: ./delivery-dashboard
+        run: npm run build
 
       # ── Supplier dashboard ───────────────────────────────────────────────
       - name: Install supplier
-        run: npm install --prefix ./supplier-dashboard
+        working-directory: ./supplier-dashboard
+        run: rm -f package-lock.json && npm install
 
       - name: Build supplier
-        run: npm --prefix ./supplier-dashboard run build
+        working-directory: ./supplier-dashboard
+        run: npm run build
 
       # ── Vendor dashboard ─────────────────────────────────────────────────
       - name: Install vendor
-        run: npm install --prefix ./vendor-dashboard/vendor-dashboard
+        working-directory: ./vendor-dashboard/vendor-dashboard
+        run: rm -f package-lock.json && npm install
 
       - name: Build vendor
-        run: npm --prefix ./vendor-dashboard/vendor-dashboard run build
+        working-directory: ./vendor-dashboard/vendor-dashboard
+        run: npm run build
