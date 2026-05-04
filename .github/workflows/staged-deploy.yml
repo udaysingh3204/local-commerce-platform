@@ -32,32 +32,51 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: '24'
+
+      - name: Configure npm (enable optional packages, bypass runner npmrc)
+        run: |
+          echo "optional=true" > /tmp/ci-npmrc
+          echo "fund=false" >> /tmp/ci-npmrc
+          echo "audit=false" >> /tmp/ci-npmrc
 
       - name: Install backend dependencies
-        run: npm --prefix ./backend ci
+        run: npm ci --omit=optional --prefix ./backend
 
-      - name: Install customer dependencies
-        run: npm --prefix ./customer-app ci
-
-      - name: Install admin dependencies
-        run: npm --prefix ./admin-dashboard/admin-dashboard ci
-
-      - name: Install delivery dependencies
-        run: npm --prefix ./delivery-dashboard ci
-
-      - name: Install supplier dependencies
-        run: npm --prefix ./supplier-dashboard ci
-
-      - name: Install vendor dependencies
-        run: npm --prefix ./vendor-dashboard/vendor-dashboard ci
-
-      - name: Build all frontends
+      - name: Install & build customer
+        working-directory: ./customer-app
         run: |
-          npm --prefix ./customer-app run build
-          npm --prefix ./admin-dashboard/admin-dashboard run build
-          npm --prefix ./delivery-dashboard run build
+          rm -rf node_modules package-lock.json
+          npm install --userconfig /tmp/ci-npmrc
+          npm run build
+
+      - name: Install & build admin
+        working-directory: ./admin-dashboard/admin-dashboard
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install --userconfig /tmp/ci-npmrc
+          npm run build
+
+      - name: Install & build delivery
+        working-directory: ./delivery-dashboard
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install --userconfig /tmp/ci-npmrc
+          npm run build
+
+      - name: Install & build supplier
+        working-directory: ./supplier-dashboard
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install --userconfig /tmp/ci-npmrc
+          npm run build
+
+      - name: Install & build vendor
+        working-directory: ./vendor-dashboard/vendor-dashboard
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install --userconfig /tmp/ci-npmrc
+          npm run build
           npm --prefix ./supplier-dashboard run build
           npm --prefix ./vendor-dashboard/vendor-dashboard run build
 
@@ -131,11 +150,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: '24'
 
       - name: Install backend dependencies
-        run: npm --prefix ./backend ci
+        run: npm ci --omit=optional --prefix ./backend
 
       - name: Run production API smoke
         env:

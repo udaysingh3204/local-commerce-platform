@@ -97,11 +97,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: '24'
 
       - name: Install backend dependencies
-        run: npm --prefix ./backend ci
+        run: npm ci --omit=optional --prefix ./backend
 
       - name: Run API smoke against rollback target
         env:
