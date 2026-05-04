@@ -22,54 +22,46 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Show npm config (debug)
-        run: npm config list
-
       # ── Backend (no native binaries needed) ──────────────────────────────
       - name: Install backend
         run: npm ci --omit=optional --prefix ./backend
 
       # ── Customer app ─────────────────────────────────────────────────────
-      - name: Install customer
+      - name: Install & build customer
         working-directory: ./customer-app
-        run: rm -f package-lock.json && npm install
-
-      - name: Build customer
-        working-directory: ./customer-app
-        run: npm run build
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
+          npm run build
 
       # ── Admin dashboard ──────────────────────────────────────────────────
-      - name: Install admin
+      - name: Install & build admin
         working-directory: ./admin-dashboard/admin-dashboard
-        run: rm -f package-lock.json && npm install
-
-      - name: Build admin
-        working-directory: ./admin-dashboard/admin-dashboard
-        run: npm run build
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
+          npm run build
 
       # ── Delivery dashboard ───────────────────────────────────────────────
-      - name: Install delivery
+      - name: Install & build delivery
         working-directory: ./delivery-dashboard
-        run: rm -f package-lock.json && npm install
-
-      - name: Build delivery
-        working-directory: ./delivery-dashboard
-        run: npm run build
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
+          npm run build
 
       # ── Supplier dashboard ───────────────────────────────────────────────
-      - name: Install supplier
+      - name: Install & build supplier
         working-directory: ./supplier-dashboard
-        run: rm -f package-lock.json && npm install
-
-      - name: Build supplier
-        working-directory: ./supplier-dashboard
-        run: npm run build
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
+          npm run build
 
       # ── Vendor dashboard ─────────────────────────────────────────────────
-      - name: Install vendor
+      - name: Install & build vendor
         working-directory: ./vendor-dashboard/vendor-dashboard
-        run: rm -f package-lock.json && npm install
-
-      - name: Build vendor
-        working-directory: ./vendor-dashboard/vendor-dashboard
-        run: npm run build
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
+          npm run build
