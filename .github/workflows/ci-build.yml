@@ -10,10 +10,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      npm_config_fund: false
-      npm_config_audit: false
-      npm_config_optional: "true"
-      npm_config_omit: ""
+      npm_config_fund: "false"
+      npm_config_audit: "false"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,6 +20,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+
+      # Override any runner-level ~/.npmrc that disables optional packages
+      - name: Configure npm for optional packages
+        run: |
+          echo "optional=true" > /tmp/ci-npmrc
+          echo "fund=false" >> /tmp/ci-npmrc
+          echo "audit=false" >> /tmp/ci-npmrc
 
       # ── Backend (no native binaries needed) ──────────────────────────────
       - name: Install backend
@@ -32,7 +37,7 @@ jobs:
         working-directory: ./customer-app
         run: |
           rm -rf node_modules package-lock.json
-          npm install
+          npm install --userconfig /tmp/ci-npmrc
           npm run build
 
       # ── Admin dashboard ──────────────────────────────────────────────────
@@ -40,7 +45,7 @@ jobs:
         working-directory: ./admin-dashboard/admin-dashboard
         run: |
           rm -rf node_modules package-lock.json
-          npm install
+          npm install --userconfig /tmp/ci-npmrc
           npm run build
 
       # ── Delivery dashboard ───────────────────────────────────────────────
@@ -48,7 +53,7 @@ jobs:
         working-directory: ./delivery-dashboard
         run: |
           rm -rf node_modules package-lock.json
-          npm install
+          npm install --userconfig /tmp/ci-npmrc
           npm run build
 
       # ── Supplier dashboard ───────────────────────────────────────────────
@@ -56,7 +61,7 @@ jobs:
         working-directory: ./supplier-dashboard
         run: |
           rm -rf node_modules package-lock.json
-          npm install
+          npm install --userconfig /tmp/ci-npmrc
           npm run build
 
       # ── Vendor dashboard ─────────────────────────────────────────────────
@@ -64,5 +69,5 @@ jobs:
         working-directory: ./vendor-dashboard/vendor-dashboard
         run: |
           rm -rf node_modules package-lock.json
-          npm install
+          npm install --userconfig /tmp/ci-npmrc
           npm run build
