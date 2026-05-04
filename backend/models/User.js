@@ -337,7 +337,7 @@ subscription: {
 }, { timestamps: true });
 
 userSchema.index({ location: "2dsphere" });
-userSchema.index({ email: 1 }, { unique: true });
+// email unique index is declared at field level (unique: true) — no duplicate schema.index needed
 userSchema.index({ phone: 1 }, { sparse: true });
 userSchema.index({ role: 1, createdAt: -1 });
 userSchema.index({ "referral.code": 1 }, { sparse: true });
