@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "preinstall": "node -e \"const fs=require('fs'),path=require('path'); function walk(d){try{for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name); if(e.isDirectory()){walk(p);} else if(e.isFile() && /tailwindcss-oxide.*\\.node$/i.test(e.name)){ try{fs.chmodSync(p,0o666);}catch(_){} try{fs.unlinkSync(p); console.log('removed',p);}catch(err){console.warn('cannot remove',p,err&&err.message);} }}}catch(_){} } try{ const nm=path.join(process.cwd(),'node_modules'); if(fs.existsSync(nm)) walk(nm); }catch(e){console.warn('preinstall error',e&&e.message);} \"",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
@@ -27,6 +26,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "@tailwindcss/oxide-wasm32-wasi": "^4.2.1",
     "tailwindcss": "^4.2.1",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.48.0",
