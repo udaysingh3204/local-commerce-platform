@@ -70,9 +70,6 @@ export default function BottomNav() {
       <div className="flex items-stretch h-16">
         {TABS.map(tab => {
           const dest = tab.authTo && user ? tab.authTo : tab.to
-          const isActive = tab.exact ? pathname === dest : pathname.startsWith(tab.to) && pathname !== "/"
-            || (tab.exact && pathname === "/")
-            || (!tab.exact && tab.to !== "/" && pathname.startsWith(tab.to))
           const active = tab.exact
             ? pathname === "/"
             : tab.to !== "/" && (pathname === tab.to || pathname.startsWith(tab.to + "/"))
