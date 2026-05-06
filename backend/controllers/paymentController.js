@@ -9,11 +9,11 @@ const razorpay = new Razorpay({
 });
 
 const isMockPaymentMode = () => (
-  looksLikeSafeDemoDatabase(process.env.MONGO_URI || "") ||
   !process.env.RAZORPAY_KEY ||
   !process.env.RAZORPAY_SECRET ||
   process.env.RAZORPAY_KEY === "test" ||
-  process.env.RAZORPAY_SECRET === "test"
+  process.env.RAZORPAY_SECRET === "test" ||
+  process.env.RAZORPAY_KEY.startsWith("rzp_test_")
 )
 
 exports.getPaymentConfig = async (req, res) => {
