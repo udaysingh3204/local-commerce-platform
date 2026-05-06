@@ -386,7 +386,7 @@ const wholesaleCatalog = [
   { name: "Snack Jar Assortment", pricePerUnit: 980, minOrderQty: 5, stock: 95, category: "snacks" },
 ];
 
-const looksLikeSafeDemoDatabase = (mongoUri = "") => /localhost|127\.0\.0\.1|demo|test/i.test(mongoUri);
+const looksLikeSafeDemoDatabase = (mongoUri = "") => /localhost|127\.0\.0\.1|\/local-commerce-demo|\/test/i.test(mongoUri);
 
 const ensureSafeDemoTarget = () => {
   if (!looksLikeSafeDemoDatabase(process.env.MONGO_URI || "")) {

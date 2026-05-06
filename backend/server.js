@@ -157,10 +157,12 @@ app.get("/health", async (req, res) => {
   const dbState = mongoose.connection.readyState; // 1 = connected
   let redisStatus = "unconfigured";
   try {
-    const { client: redisClient } = require("./config/redis");
-    if (redisClient && redisClient.isOpen) {
+    const redisClient = require("./config/redis");
+    if (redisClient && (redisClient.status === "ready" || redisClient.isOpen)) {
       await redisClient.ping();
       redisStatus = "ok";
+    } else if (redisClient) {
+      redisStatus = "connecting";
     }
   } catch {
     redisStatus = "error";
