@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef } from "react"
 import { toast } from "sonner"
 import API from "../api/api"
 import { useVendor } from "../context/VendorContext"
@@ -219,7 +219,7 @@ export default function Products() {
                   {p.image ? (
                     <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl bg-gradient-to-br from-gray-800 to-gray-900">📦</div>
+                    <div className="w-full h-full flex items-center justify-center text-4xl bg-linear-to-br from-gray-800 to-gray-900">📦</div>
                   )}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                   {/* Quick actions overlay */}

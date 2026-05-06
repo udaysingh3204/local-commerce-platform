@@ -63,7 +63,7 @@ export default function Login() {
       <div className="flex-1 lg:max-w-md flex items-center justify-center p-8">
         <div className="w-full max-w-sm">
           <div className="mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-indigo-900">
+            <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-indigo-900">
               📦
             </div>
             <h1 className="text-3xl font-black text-white mb-1">Supplier Login</h1>
@@ -111,7 +111,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3.5 rounded-2xl font-black text-sm hover:shadow-lg hover:shadow-indigo-900 transition-all disabled:opacity-60 mt-2"
+              className="w-full bg-linear-to-r from-indigo-500 to-purple-600 text-white py-3.5 rounded-2xl font-black text-sm hover:shadow-lg hover:shadow-indigo-900 transition-all disabled:opacity-60 mt-2"
             >
               {loading ? "Signing in..." : "Access Dashboard →"}
             </button>

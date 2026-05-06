@@ -2,12 +2,17 @@
   "expo": {
     "name": "LocalMart Driver",
     "slug": "localmart-driver",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
+    "scheme": "localmart-driver",
     "assetBundlePatterns": [
       "**/*"
     ],
+    "splash": {
+      "backgroundColor": "#030712",
+      "resizeMode": "contain"
+    },
     "plugins": [
       [
         "expo-location",
@@ -15,23 +20,41 @@
           "locationAlwaysAndWhenInUsePermission": "LocalMart Driver needs your location to send live delivery tracking updates.",
           "locationWhenInUsePermission": "LocalMart Driver needs your location while delivering orders."
         }
-      ]
+      ],
+      "expo-task-manager"
     ],
     "android": {
+      "package": "com.localmart.driver",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#030712"
       },
       "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
       ]
     },
     "ios": {
-      "supportsTablet": true,
+      "bundleIdentifier": "com.localmart.driver",
+      "supportsTablet": false,
+      "buildNumber": "1",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "LocalMart Driver needs your location while delivering orders.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "LocalMart Driver needs your location to send live delivery tracking updates."
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "LocalMart Driver needs your location to send live delivery tracking updates.",
+        "UIBackgroundModes": ["location", "fetch"]
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "localmart-driver"
       }
     }
   }

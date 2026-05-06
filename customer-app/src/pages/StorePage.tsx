@@ -176,7 +176,7 @@ export default function StorePage() {
               return (
                 <div key={product._id} className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-violet-200 hover:shadow-lg hover:shadow-violet-100 transition-all duration-200">
                   {/* Image */}
-                  <div className={`h-36 bg-gradient-to-br ${gradClass} flex items-center justify-center relative overflow-hidden`}>
+                  <div className={`h-36 bg-linear-to-br ${gradClass} flex items-center justify-center relative overflow-hidden`}>
                     {product.image
                       ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                       : <span className="text-5xl group-hover:scale-110 transition-transform duration-300 select-none">📦</span>
@@ -212,7 +212,7 @@ export default function StorePage() {
                     ) : qty === 0 ? (
                       <button
                         onClick={() => handleAdd(product)}
-                        className="mt-2 w-full py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-violet-600 to-pink-500 text-white hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5 transition-all"
+                        className="mt-2 w-full py-2.5 rounded-xl text-xs font-bold bg-linear-to-r from-violet-600 to-pink-500 text-white hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5 transition-all"
                       >
                         + Add
                       </button>
@@ -254,7 +254,7 @@ export default function StorePage() {
           <div className="max-w-lg mx-auto pointer-events-auto">
             <button
               onClick={() => navigate("/cart")}
-              className="w-full flex items-center justify-between bg-gradient-to-r from-violet-700 to-pink-600 text-white px-6 py-4 rounded-2xl shadow-2xl shadow-violet-400/40 hover:shadow-violet-400/60 hover:-translate-y-0.5 transition-all font-bold"
+              className="w-full flex items-center justify-between bg-linear-to-r from-violet-700 to-pink-600 text-white px-6 py-4 rounded-2xl shadow-2xl shadow-violet-400/40 hover:shadow-violet-400/60 hover:-translate-y-0.5 transition-all font-bold"
             >
               <span className="flex items-center gap-2">
                 <span className="bg-white/20 text-white text-xs font-black w-7 h-7 rounded-xl flex items-center justify-center">

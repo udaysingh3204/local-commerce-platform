@@ -13,3 +13,8 @@ local-commerce-platform/
 .DS_Store
 Thumbs.db
 *.log
+
+# Play Store secrets — never commit service account keys
+google-service-account.json
+*.keystore
+*.jks

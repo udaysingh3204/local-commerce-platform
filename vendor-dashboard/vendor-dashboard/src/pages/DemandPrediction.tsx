@@ -49,7 +49,7 @@ export default function DemandPrediction() {
           { label: "Critical Restocks", value: critical.length, icon: "🚨", color: critical.length > 0 ? "text-red-400" : "text-gray-400", bg: "from-red-500/15" },
           { label: "Healthy Stock", value: predictions.length - critical.length, icon: "✅", color: "text-emerald-400", bg: "from-emerald-500/15" },
         ].map(s => (
-          <div key={s.label} className={`bg-gradient-to-br ${s.bg} to-transparent border border-gray-800 rounded-2xl p-4 flex items-center gap-4`}>
+          <div key={s.label} className={`bg-linear-to-br ${s.bg} to-transparent border border-gray-800 rounded-2xl p-4 flex items-center gap-4`}>
             <span className="text-2xl">{s.icon}</span>
             <div>
               <p className="text-xs text-gray-500 font-semibold">{s.label}</p>

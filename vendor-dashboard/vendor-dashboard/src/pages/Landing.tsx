@@ -84,7 +84,7 @@ function FeatureCard({ icon, title, desc, tag, accent = "emerald" }: FeatureCard
     sky: "from-sky-500/8 to-cyan-500/4 border-sky-900/60 hover:border-sky-700/50",
   }
   return (
-    <div className={`group relative bg-[#0c0e18] border rounded-2xl p-6 bg-gradient-to-br hover:-translate-y-1 transition-all duration-300 ${gradient[accent]}`}>
+    <div className={`group relative bg-[#0c0e18] border rounded-2xl p-6 bg-linear-to-br hover:-translate-y-1 transition-all duration-300 ${gradient[accent]}`}>
       {tag && (
         <span className="absolute top-4 right-4 text-xs font-bold bg-violet-500/15 text-violet-400 border border-violet-500/20 px-2 py-0.5 rounded-full">
           {tag}
@@ -135,7 +135,7 @@ export default function Landing() {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-[#060810]/80 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-sm">🛍️</div>
+            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-sm">🛍️</div>
             <span className="text-lg font-black text-white">LocalMart</span>
             <span className="text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full ml-1">Vendor</span>
           </div>
@@ -143,7 +143,7 @@ export default function Landing() {
             <Link to="/login" className="px-4 py-2 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-all">
               Log in
             </Link>
-            <Link to="/register" className="px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-900/30 hover:shadow-emerald-800/50 hover:-translate-y-0.5 transition-all">
+            <Link to="/register" className="px-4 py-2 rounded-xl text-sm font-bold bg-linear-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-900/30 hover:shadow-emerald-800/50 hover:-translate-y-0.5 transition-all">
               Get started
             </Link>
           </div>
@@ -177,7 +177,7 @@ export default function Landing() {
             <div className="flex flex-col sm:flex-row gap-3 mb-12 lm-slide-up lm-d3" style={{ opacity: 0 }}>
               <Link
                 to="/register"
-                className="group inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-black text-base bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-900/30 hover:shadow-emerald-800/50 hover:-translate-y-0.5 transition-all"
+                className="group inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-black text-base bg-linear-to-r from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-900/30 hover:shadow-emerald-800/50 hover:-translate-y-0.5 transition-all"
               >
                 Start Selling Free
                 <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
@@ -193,7 +193,7 @@ export default function Landing() {
             <div className="flex items-center gap-4 lm-slide-up lm-d4" style={{ opacity: 0 }}>
               <div className="flex -space-x-3">
                 {["🧑‍🍳", "👩‍🌾", "👨‍🏪", "👩‍🍳", "🧑‍🌾"].map((e, i) => (
-                  <div key={i} className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 border-2 border-[#060810] flex items-center justify-center text-base">
+                  <div key={i} className="w-9 h-9 rounded-full bg-linear-to-br from-gray-700 to-gray-800 border-2 border-[#060810] flex items-center justify-center text-base">
                     {e}
                   </div>
                 ))}
@@ -281,7 +281,7 @@ export default function Landing() {
       {/* FINAL CTA */}
       <section className="py-24">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-950 via-[#0c0e18] to-violet-950 border border-white/8 p-16 text-center">
+          <div className="relative rounded-3xl overflow-hidden bg-linear-to-br from-emerald-950 via-[#0c0e18] to-violet-950 border border-white/8 p-16 text-center">
             <div className="absolute top-0 left-0 w-72 h-72 bg-emerald-500/8 rounded-full blur-3xl" />
             <div className="absolute bottom-0 right-0 w-72 h-72 bg-violet-500/8 rounded-full blur-3xl" />
             <div className="relative">
@@ -294,7 +294,7 @@ export default function Landing() {
               </p>
               <Link
                 to="/register"
-                className="inline-flex items-center gap-2 px-10 py-4 rounded-2xl font-black text-base bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-900/40 hover:shadow-emerald-700/50 hover:-translate-y-0.5 transition-all"
+                className="inline-flex items-center gap-2 px-10 py-4 rounded-2xl font-black text-base bg-linear-to-r from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-900/40 hover:shadow-emerald-700/50 hover:-translate-y-0.5 transition-all"
               >
                 Create Vendor Account — Free →
               </Link>
@@ -307,7 +307,7 @@ export default function Landing() {
       <footer className="border-t border-white/5 py-10">
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-xs">🛍️</div>
+            <div className="w-7 h-7 rounded-lg bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-xs">🛍️</div>
             <span className="text-gray-600 text-sm font-bold">LocalMart Vendor Platform</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-gray-700">

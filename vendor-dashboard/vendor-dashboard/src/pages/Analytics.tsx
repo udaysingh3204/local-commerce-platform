@@ -26,7 +26,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 function StatCard({ label, value, icon, sub, color }: { label: string; value: string | number; icon: string; sub?: string; color: string }) {
   return (
-    <div className={`bg-gradient-to-br ${color} border border-gray-800 rounded-2xl p-5 space-y-2`}>
+    <div className={`bg-linear-to-br ${color} border border-gray-800 rounded-2xl p-5 space-y-2`}>
       <div className="flex items-center justify-between">
         <span className="text-xs font-bold uppercase tracking-widest text-gray-400">{label}</span>
         <span className="text-xl">{icon}</span>

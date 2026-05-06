@@ -105,7 +105,7 @@ export default function Register() {
 
         {/* Top logo */}
         <Link to="/" className="relative flex items-center gap-2 z-10">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-base">🛍️</div>
+          <div className="w-9 h-9 rounded-xl bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-base">🛍️</div>
           <span className="text-xl font-black text-white">LocalMart</span>
         </Link>
 
@@ -155,10 +155,10 @@ export default function Register() {
           {/* Header */}
           <div className="mb-8">
             <Link to="/" className="lg:hidden flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-sm">🛍️</div>
+              <div className="w-8 h-8 rounded-xl bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-sm">🛍️</div>
               <span className="text-lg font-black text-white">LocalMart</span>
             </Link>
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-xl mb-4 shadow-lg shadow-emerald-900/40">
+            <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-xl mb-4 shadow-lg shadow-emerald-900/40">
               🏪
             </div>
             <h1 className="text-3xl font-black text-white mb-1">Create account</h1>
@@ -238,7 +238,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-3.5 rounded-xl font-black text-sm shadow-lg shadow-emerald-900/30 hover:shadow-emerald-800/50 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
+              className="w-full mt-2 bg-linear-to-r from-emerald-500 to-teal-600 text-white py-3.5 rounded-xl font-black text-sm shadow-lg shadow-emerald-900/30 hover:shadow-emerald-800/50 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">

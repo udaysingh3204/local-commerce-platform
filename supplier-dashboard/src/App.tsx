@@ -79,7 +79,7 @@ function AppContent() {
       {/* Topbar */}
       <header className="bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.12),transparent_25%),linear-gradient(135deg,#0f172a_0%,#111827_55%,#1e293b_100%)] border-b border-gray-800 px-6 py-4 flex items-center justify-between sticky top-0 z-30 backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-700 flex items-center justify-center text-lg shadow-lg shadow-indigo-900/50">
+          <div className="w-9 h-9 rounded-xl bg-linear-to-br from-indigo-600 to-violet-700 flex items-center justify-center text-lg shadow-lg shadow-indigo-900/50">
             🏭
           </div>
           <div>

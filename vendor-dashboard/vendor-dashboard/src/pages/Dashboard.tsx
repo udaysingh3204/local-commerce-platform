@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import API from "../api/api"
 import { useVendor } from "../context/VendorContext"
@@ -118,7 +118,7 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {loading ? Array(4).fill(0).map((_, i) => <SkeletonCard key={i} />) : kpis.map(kpi => (
-          <div key={kpi.label} className={`bg-gradient-to-br ${kpi.gradient} border ${kpi.border} rounded-2xl p-5 space-y-3 hover:scale-[1.02] transition-transform duration-200`}>
+          <div key={kpi.label} className={`bg-linear-to-br ${kpi.gradient} border ${kpi.border} rounded-2xl p-5 space-y-3 hover:scale-[1.02] transition-transform duration-200`}>
             <div className="flex items-center justify-between">
               <span className={`text-xs font-bold uppercase tracking-widest ${kpi.text}`}>{kpi.label}</span>
               <span className="text-xl">{kpi.icon}</span>

@@ -83,7 +83,7 @@ export default function Login() {
         <div className="relative w-full max-w-md">
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.12),transparent_55%)]" />
           <div className="mb-8 text-center lg:text-left">
-            <div className="w-16 h-16 mx-auto lg:mx-0 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-3xl mb-4 shadow-2xl shadow-orange-900">
+            <div className="w-16 h-16 mx-auto lg:mx-0 rounded-2xl bg-linear-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-3xl mb-4 shadow-2xl shadow-orange-900">
               🛵
             </div>
             <h1 className="text-3xl font-black text-white">Driver Portal</h1>
@@ -127,7 +127,7 @@ export default function Login() {
             <button
               onClick={handleLogin}
               disabled={loading}
-              className="mt-5 w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 py-3.5 rounded-2xl font-black text-sm hover:shadow-lg hover:shadow-orange-900 transition-all disabled:opacity-60"
+              className="mt-5 w-full bg-linear-to-r from-yellow-400 to-orange-500 text-gray-900 py-3.5 rounded-2xl font-black text-sm hover:shadow-lg hover:shadow-orange-900 transition-all disabled:opacity-60"
             >
               {loading ? "Signing in..." : "Start delivering →"}
             </button>
