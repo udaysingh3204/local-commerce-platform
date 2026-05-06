@@ -86,6 +86,8 @@ export default function Orders() {
   }
 
   const totalRevenue = orders.filter(o => o.status === "delivered").reduce((s: number, o: any) => s + (o.totalAmount ?? 0), 0)
+  const COMMISSION_RATE = 0.05
+  const totalCommission = Math.round(totalRevenue * COMMISSION_RATE)
 
   return (
     <div className="p-6 xl:p-8">
@@ -96,6 +98,7 @@ export default function Orders() {
           { label: "Active", value: (counts.accepted ?? 0) + (counts.preparing ?? 0) + (counts.out_for_delivery ?? 0), icon: "⚡", color: "text-orange-400" },
           { label: "Delivered", value: counts.delivered ?? 0, icon: "✅", color: "text-emerald-400" },
           { label: "Revenue", value: `₹${totalRevenue.toLocaleString("en-IN")}`, icon: "💰", color: "text-sky-400" },
+          { label: "Platform Commission (5%)", value: `₹${totalCommission.toLocaleString("en-IN")}`, icon: "🏦", color: "text-pink-400" },
         ].map(stat => (
           <div key={stat.label} className="bg-[#0d1120] border border-white/5 rounded-2xl px-5 py-4">
             <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">{stat.label}</p>
@@ -164,7 +167,7 @@ export default function Orders() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/5">
-                {["Order ID", "Customer", "Items", "Status", "Payment", "Amount", "Date", "Actions"].map(h => (
+                {["Order ID", "Customer", "Items", "Status", "Payment", "Amount", "Commission (5%)", "Date", "Actions"].map(h => (
                   <th key={h} className="text-left px-5 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
@@ -202,6 +205,7 @@ export default function Orders() {
                         })()}
                       </td>
                       <td className="px-5 py-4 text-white font-black">₹{(order.totalAmount ?? 0).toLocaleString("en-IN")}</td>
+                      <td className="px-5 py-4 text-pink-400 font-semibold text-xs">₹{Math.round((order.totalAmount ?? 0) * 0.05).toLocaleString("en-IN")}</td>
                       <td className="px-5 py-4 text-slate-500 text-xs">
                         {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
                         {" · "}
@@ -233,7 +237,7 @@ export default function Orders() {
                     </tr>
                     {isExpanded && (
                       <tr key={`${order._id}-detail`} className="border-b border-white/3 bg-white/1">
-                        <td colSpan={8} className="px-8 py-4">
+                        <td colSpan={9} className="px-8 py-4">
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                             <div>
                               <p className="text-slate-500 font-bold uppercase tracking-wider mb-2">Items</p>
@@ -253,6 +257,9 @@ export default function Orders() {
                                 <p className="text-emerald-400 mt-1">Discount: −₹{order.promotionAudit.discountAmount}</p>
                               )}
                               <p className="text-slate-500 mt-1">Method: {order.paymentMethod?.replace(/_/g, " ") ?? "—"}</p>
+                              <p className="text-pink-400 mt-2 font-bold">
+                                Platform fee (5%): ₹{Math.round((order.totalAmount ?? 0) * 0.05).toLocaleString("en-IN")}
+                              </p>
                             </div>
                           </div>
                         </td>
@@ -263,7 +270,7 @@ export default function Orders() {
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-5 py-16 text-center">
+                  <td colSpan={9} className="px-5 py-16 text-center">
                     <div className="text-4xl mb-3">📦</div>
                     <p className="text-slate-500">No orders found</p>
                   </td>

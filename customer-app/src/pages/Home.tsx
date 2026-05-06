@@ -657,6 +657,9 @@ export default function Home() {
               const icon  = CATEGORY_ICONS[store.category?.toLowerCase()]  ?? "🏪"
               const grad  = STORE_GRADIENTS[idx % STORE_GRADIENTS.length]
               const cGrad = CATEGORY_COLORS[store.category?.toLowerCase()] ?? CATEGORY_COLORS.default
+              // Deterministic ETA from store ID hash (12–38 min)
+              const etaSeed = store._id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+              const etaMin = 12 + (etaSeed % 27)
               return (
                 <div
                   key={store._id}
@@ -690,7 +693,7 @@ export default function Home() {
                       <div className="flex items-center gap-2 text-xs text-gray-500">
                         <span className="flex items-center gap-1 bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-lg">⭐ 4.5</span>
                         <span>·</span>
-                        <span className="flex items-center gap-1 bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded-lg">⚡ 25-35 min</span>
+                        <span className="flex items-center gap-1 bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded-lg">⚡ {etaMin} min</span>
                       </div>
                       <span className="text-violet-600 font-bold text-xs group-hover:translate-x-1 transition-transform inline-block">
                         View →

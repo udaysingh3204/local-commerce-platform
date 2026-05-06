@@ -18,8 +18,7 @@ const Orders = lazy(() => import("./pages/Orders"))
 const Wishlist = lazy(() => import("./pages/Wishlist"))
 const Notifications = lazy(() => import("./pages/Notifications"))
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"))
-const ResetPassword = lazy(() => import("./pages/ResetPassword"))
-
+const ResetPassword = lazy(() => import("./pages/ResetPassword"))const Search = lazy(() => import('./pages/Search'))
 function RouteFallback() {
 	return (
 		<div className="min-h-[50vh] bg-gray-50 flex items-center justify-center px-6">
@@ -71,6 +70,7 @@ function App() {
 					<Route path="/signup" element={<Signup />} />
 					<Route path="/forgot-password" element={<ForgotPassword />} />
 					<Route path="/reset-password" element={<ResetPassword />} />
+					<Route path="/search" element={<Search />} />
 				</Routes>
 			</Suspense>
 
