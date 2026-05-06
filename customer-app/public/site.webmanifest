@@ -1,17 +1,43 @@
 {
-  "name": "LocalMart",
+  "name": "LocalMart — Fast Local Delivery",
   "short_name": "LocalMart",
-  "description": "Fast local delivery from nearby stores with live tracking.",
-  "start_url": "/",
+  "description": "Order groceries, food and essentials from nearby stores with live tracking.",
+  "start_url": "/?source=pwa",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#f8fafc",
-  "theme_color": "#1a0533",
+  "theme_color": "#7c3aed",
+  "categories": ["shopping", "food", "lifestyle"],
+  "lang": "en-IN",
+  "shortcuts": [
+    {
+      "name": "Search products",
+      "short_name": "Search",
+      "description": "Find products across all nearby stores",
+      "url": "/search?source=shortcut",
+      "icons": [{ "src": "/vite.svg", "sizes": "any" }]
+    },
+    {
+      "name": "My orders",
+      "short_name": "Orders",
+      "description": "Track your current and past orders",
+      "url": "/orders?source=shortcut",
+      "icons": [{ "src": "/vite.svg", "sizes": "any" }]
+    },
+    {
+      "name": "My cart",
+      "short_name": "Cart",
+      "description": "View items in your cart",
+      "url": "/cart?source=shortcut",
+      "icons": [{ "src": "/vite.svg", "sizes": "any" }]
+    }
+  ],
   "icons": [
     {
       "src": "/vite.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }

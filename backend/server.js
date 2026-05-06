@@ -18,6 +18,9 @@ const { Server } = require("socket.io");
 const {
   helmet,
   limiter,
+  authLimiter,
+  paymentLimiter,
+  searchLimiter,
   mongoSanitize,
   hpp,
   compression
@@ -179,21 +182,21 @@ app.get("/health", async (req, res) => {
 
 /* API ROUTES */
 
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/stores", storeRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/delivery", deliveryRoutes);
 app.use("/api/cart", cartRoutes);
-app.use("/api/payment", paymentRoutes);
-app.use("/api/payments", paymentRoutes);
+app.use("/api/payment", paymentLimiter, paymentRoutes);
+app.use("/api/payments", paymentLimiter, paymentRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/wholesale", wholesaleRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/prediction", predictionRoutes);
-app.use("/api/driver", driverAuthRoutes);
+app.use("/api/driver", authLimiter, driverAuthRoutes);
 app.use("/api/growth", growthRoutes);
 app.use("/api/demo", demoRoutes);
 app.use("/api/app", appRoutes);
@@ -208,7 +211,7 @@ app.use("/api/referral", referralRoutes);
 app.use("/api/admin/analytics", adminAnalyticsRoutes);
 app.use("/api/language", languageRoutes);
 // Phase 3 Routes
-app.use("/api/search", searchRoutes);
+app.use("/api/search", searchLimiter, searchRoutes);
 app.use("/api/loyalty", loyaltyRoutes);
 app.use("/api/webhooks", webhookRoutes);
 app.use("/api/promotions", promotionRoutes);

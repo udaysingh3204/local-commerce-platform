@@ -51,6 +51,9 @@ export default function Search() {
   const [results, setResults] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [addingId, setAddingId] = useState<string | null>(null)
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const suggestDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const cartCount = (id: string) => cart.find((c: any) => c._id === id)?.quantity ?? 0
@@ -86,6 +89,21 @@ export default function Search() {
     debounceRef.current = setTimeout(() => {
       setSearchParams(val ? { q: val } : {})
     }, 300)
+    // Autocomplete suggestions
+    if (suggestDebounceRef.current) clearTimeout(suggestDebounceRef.current)
+    if (val.trim().length >= 2) {
+      suggestDebounceRef.current = setTimeout(async () => {
+        try {
+          const res = await API.get(`/search/suggestions?q=${encodeURIComponent(val)}&limit=6`)
+          const raw = res.data?.suggestions ?? res.data ?? []
+          setSuggestions(Array.isArray(raw) ? raw.slice(0, 6) : [])
+          setShowSuggestions(true)
+        } catch { setSuggestions([]) }
+      }, 180)
+    } else {
+      setSuggestions([])
+      setShowSuggestions(false)
+    }
   }
 
   const handleQuick = (term: string) => {
@@ -123,6 +141,8 @@ export default function Search() {
               ref={inputRef}
               value={query}
               onChange={e => handleChange(e.target.value)}
+              onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
               placeholder='Search "milk", "chips", "medicine"...'
               className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-violet-400 focus:bg-white transition-all"
             />
@@ -132,6 +152,23 @@ export default function Search() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
+            )}
+            {/* Autocomplete dropdown */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-xl shadow-lg z-50 overflow-hidden">
+                {suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    onMouseDown={e => { e.preventDefault(); handleQuick(s); setShowSuggestions(false) }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 text-left transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <span>{s}</span>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
         </div>

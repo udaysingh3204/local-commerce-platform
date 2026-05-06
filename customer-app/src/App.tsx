@@ -3,7 +3,9 @@ import { Routes, Route } from "react-router-dom"
 
 import { CartProvider } from "./context/CartContext"
 import Navbar from "./components/Navbar"
+import BottomNav from "./components/BottomNav"
 import DeliveryRadar from "./components/DeliveryRadar"
+import ErrorBoundary from "./components/ErrorBoundary"
 import { useAuth } from "./context/useAuth"
 
 const Home = lazy(() => import("./pages/Home"))
@@ -18,7 +20,9 @@ const Orders = lazy(() => import("./pages/Orders"))
 const Wishlist = lazy(() => import("./pages/Wishlist"))
 const Notifications = lazy(() => import("./pages/Notifications"))
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"))
-const ResetPassword = lazy(() => import("./pages/ResetPassword"))const Search = lazy(() => import('./pages/Search'))
+const ResetPassword = lazy(() => import("./pages/ResetPassword"))
+const Search = lazy(() => import("./pages/Search"))
+const NotFound = lazy(() => import("./pages/NotFound"))
 function RouteFallback() {
 	return (
 		<div className="min-h-[50vh] bg-gray-50 flex items-center justify-center px-6">
@@ -50,7 +54,9 @@ function App() {
 
 			<Navbar />
 			<DeliveryRadar />
+			<BottomNav />
 
+			<ErrorBoundary>
 			<Suspense fallback={<RouteFallback />}>
 				<Routes>
 
@@ -71,8 +77,10 @@ function App() {
 					<Route path="/forgot-password" element={<ForgotPassword />} />
 					<Route path="/reset-password" element={<ResetPassword />} />
 					<Route path="/search" element={<Search />} />
+					<Route path="*" element={<NotFound />} />
 				</Routes>
 			</Suspense>
+			</ErrorBoundary>
 
 		</CartProvider>
 

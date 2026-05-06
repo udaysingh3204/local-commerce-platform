@@ -66,6 +66,9 @@ export default function StorePage() {
   const cartTotal = cart.reduce((s: number, i: any) => s + i.price * i.quantity, 0)
   const cartCount = cart.reduce((s: number, i: any) => s + i.quantity, 0)
   const storeIcon = CATEGORY_ICONS[store?.category?.toLowerCase()] ?? "🏪"
+  // Deterministic ETA from store ID (same algorithm as Home page)
+  const etaSeed = (storeId ?? "").split("").reduce((acc, c) => acc + c.charCodeAt(0), 0)
+  const etaMin = 12 + (etaSeed % 27)
 
   const handleAdd = (product: any) => {
     addToCart(product)
@@ -75,13 +78,13 @@ export default function StorePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* STORE HEADER */}
-      <div className="bg-gradient-to-r from-violet-900 via-violet-800 to-fuchsia-900 text-white px-6 py-8">
+      <div className="bg-linear-to-r from-violet-900 via-violet-800 to-fuchsia-900 text-white px-6 py-8">
         <div className="max-w-5xl mx-auto">
           <button onClick={() => navigate("/")} className="text-violet-300 hover:text-white text-sm mb-4 flex items-center gap-1 transition">
             ← All Stores
           </button>
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-3xl shadow-lg shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-violet-500 to-pink-500 flex items-center justify-center text-3xl shadow-lg shrink-0">
               {storeIcon}
             </div>
             <div className="flex-1 min-w-0">
@@ -95,6 +98,9 @@ export default function StorePage() {
                 <span className="w-1 h-1 bg-violet-500 rounded-full" />
                 <span className="flex items-center gap-1 text-xs text-emerald-400 font-bold">
                   <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block" /> Open
+                </span>
+                <span className="flex items-center gap-1 text-xs text-amber-300 font-bold bg-amber-400/10 px-2 py-0.5 rounded-full">
+                  ⚡ {etaMin} min
                 </span>
                 {storeRating > 0 && (
                   <span className="flex items-center gap-1 text-xs text-yellow-300 font-bold">
