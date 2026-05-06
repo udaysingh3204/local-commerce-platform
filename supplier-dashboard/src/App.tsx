@@ -1,8 +1,11 @@
 import { SupplierProvider, useSupplier } from "./context/SupplierContext"
 import { useEffect, useState } from "react"
 import API from "./api/api"
+import Dashboard from "./pages/Dashboard"
 import Orders from "./pages/Orders"
 import Login from "./pages/Login"
+
+type Tab = "dashboard" | "orders"
 
 type SupplierNotification = {
   _id: string
@@ -21,6 +24,7 @@ function AppContent() {
   const { supplier, startup, logout, authReady } = useSupplier()
   const [notifications, setNotifications] = useState<SupplierNotification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
+  const [activeTab, setActiveTab] = useState<Tab>("dashboard")
 
   useEffect(() => {
     if (!supplier) return
@@ -164,7 +168,30 @@ function AppContent() {
           )}
         </div>
       </div>
-      <Orders />
+
+      {/* Tab navigation */}
+      <div className="border-b border-white/5 bg-black/30 px-6">
+        <div className="mx-auto max-w-7xl flex gap-1">
+          {(["dashboard", "orders"] as Tab[]).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-5 py-3 text-[11px] font-black uppercase tracking-[0.18em] border-b-2 transition-colors ${
+                activeTab === tab
+                  ? "border-indigo-400 text-indigo-300"
+                  : "border-transparent text-slate-500 hover:text-slate-300"
+              }`}
+            >
+              {tab === "dashboard" ? "📊 Dashboard" : "📦 Orders"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Page content */}
+      <div className="flex-1">
+        {activeTab === "dashboard" ? <Dashboard /> : <Orders />}
+      </div>
     </div>
   )
 }
