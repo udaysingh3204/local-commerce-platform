@@ -4,7 +4,7 @@ import * as Device from "expo-device"
 import { Platform, Alert } from "react-native"
 import { API_BASE_URL } from "../config/env"
 import { getSecureValue } from "../lib/secureStore"
-import { MOBILE_STORAGE_KEYS } from "@local-commerce-platform/mobile-shared"
+import { MOBILE_STORAGE_KEYS } from "../lib/shared"
 
 // Show notification banners while app is in the foreground
 Notifications.setNotificationHandler({

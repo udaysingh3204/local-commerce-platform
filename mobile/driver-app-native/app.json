@@ -1,69 +1,70 @@
 {
-  "expo": {
-    "name": "LocalMart Driver",
-    "slug": "localmart-driver",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
-    "scheme": "localmart-driver",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "backgroundColor": "#030712",
-      "resizeMode": "contain"
-    },
-    "plugins": [
-      [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "LocalMart Driver needs your location to send live delivery tracking updates.",
-          "locationWhenInUsePermission": "LocalMart Driver needs your location while delivering orders."
-        }
-      ],
-      "expo-task-manager"
-    ],
-    "android": {
-      "package": "com.localmart.driver",
-      "versionCode": 2,
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#030712"
-      },
-      "permissions": [
-        "INTERNET",
-        "ACCESS_NETWORK_STATE",
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_BACKGROUND_LOCATION",
-        "FOREGROUND_SERVICE",
-        "FOREGROUND_SERVICE_LOCATION",
-        "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
-      ]
-    },
-    "ios": {
-      "bundleIdentifier": "com.localmart.driver",
-      "supportsTablet": false,
-      "buildNumber": "1",
-      "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "LocalMart Driver needs your location while delivering orders.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "LocalMart Driver needs your location to send live delivery tracking updates.",
-        "UIBackgroundModes": [
-          "location",
-          "fetch"
-        ]
-      }
-    },
-    "extra": {
-      "eas": {
-        "projectId": "aceed3a3-63b4-4593-927b-0acc52a2fa1a"
-      }
-    },
-    "owner": "udaysingh3204"
-  }
+    "expo":  {
+                 "name":  "LocalMart Driver",
+                 "slug":  "localmart-driver",
+                 "version":  "1.0.0",
+                 "orientation":  "portrait",
+                 "icon":  "./assets/icon.png",
+                 "userInterfaceStyle":  "dark",
+                 "scheme":  "localmart-driver",
+                 "assetBundlePatterns":  [
+                                             "**/*"
+                                         ],
+                 "splash":  {
+                                "image":  "./assets/splash-icon.png",
+                                "backgroundColor":  "#030712",
+                                "resizeMode":  "contain"
+                            },
+                 "plugins":  [
+                                 [
+                                     "expo-location",
+                                     {
+                                         "locationAlwaysAndWhenInUsePermission":  "LocalMart Driver needs your location to send live delivery tracking updates.",
+                                         "locationWhenInUsePermission":  "LocalMart Driver needs your location while delivering orders."
+                                     }
+                                 ],
+                                 "expo-task-manager"
+                             ],
+                 "android":  {
+                                 "package":  "com.localmart.driver",
+                                 "versionCode":  5,
+                                 "adaptiveIcon":  {
+                                                      "foregroundImage":  "./assets/adaptive-icon.png",
+                                                      "backgroundColor":  "#030712"
+                                                  },
+                                 "permissions":  [
+                                                     "INTERNET",
+                                                     "ACCESS_NETWORK_STATE",
+                                                     "ACCESS_FINE_LOCATION",
+                                                     "ACCESS_COARSE_LOCATION",
+                                                     "ACCESS_BACKGROUND_LOCATION",
+                                                     "FOREGROUND_SERVICE",
+                                                     "FOREGROUND_SERVICE_LOCATION",
+                                                     "RECEIVE_BOOT_COMPLETED",
+                                                     "VIBRATE",
+                                                     "android.permission.ACCESS_COARSE_LOCATION",
+                                                     "android.permission.ACCESS_FINE_LOCATION"
+                                                 ]
+                             },
+                 "ios":  {
+                             "bundleIdentifier":  "com.localmart.driver",
+                             "supportsTablet":  false,
+                             "buildNumber":  "1",
+                             "infoPlist":  {
+                                               "NSLocationWhenInUseUsageDescription":  "LocalMart Driver needs your location while delivering orders.",
+                                               "NSLocationAlwaysAndWhenInUseUsageDescription":  "LocalMart Driver needs your location to send live delivery tracking updates.",
+                                               "UIBackgroundModes":  [
+                                                                         "location",
+                                                                         "fetch"
+                                                                     ]
+                                           }
+                         },
+                 "extra":  {
+                               "eas":  {
+                                           "projectId":  "aceed3a3-63b4-4593-927b-0acc52a2fa1a"
+                                       }
+                           },
+                 "owner":  "udaysingh3204",
+                 "newArchEnabled":  false
+             }
 }

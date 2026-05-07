@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
-import type { AppConfig, CustomerAuthUser, CustomerStartup } from "@local-commerce-platform/mobile-shared"
-import { fetchJson, MOBILE_STORAGE_KEYS } from "@local-commerce-platform/mobile-shared"
+import type { AppConfig, CustomerAuthUser, CustomerStartup } from "../lib/shared"
+import { fetchJson, MOBILE_STORAGE_KEYS } from "../lib/shared"
 import { bootstrapCustomer, clearCustomerToken, loginCustomer, persistCustomerToken } from "../lib/auth"
 import { loadAppConfig } from "../lib/appConfig"
 import { getSecureValue } from "../lib/secureStore"

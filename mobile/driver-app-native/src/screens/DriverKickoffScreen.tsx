@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { SafeAreaView, ScrollView, Text, View } from "react-native"
-import { AppConfig, fetchJson } from "@local-commerce-platform/mobile-shared"
+import { AppConfig, fetchJson } from "../lib/shared"
 import { API_BASE_URL } from "../config/env"
 
 const cardStyle = {

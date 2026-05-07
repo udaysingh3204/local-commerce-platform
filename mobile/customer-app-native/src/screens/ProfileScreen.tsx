@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from "react-native"
-import type { CustomerAuthUser } from "@local-commerce-platform/mobile-shared"
+import type { CustomerAuthUser } from "../lib/shared"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

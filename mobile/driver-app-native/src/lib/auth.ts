@@ -1,4 +1,4 @@
-import { createAuthHeaders, DriverBootstrapResponse, DriverLoginResponse, fetchJson, MOBILE_STORAGE_KEYS } from "@local-commerce-platform/mobile-shared"
+import { createAuthHeaders, DriverBootstrapResponse, DriverLoginResponse, fetchJson, MOBILE_STORAGE_KEYS } from "./shared"
 import { API_BASE_URL } from "../config/env"
 import { deleteSecureValue, getSecureValue, setSecureValue } from "./secureStore"
 

@@ -3,7 +3,7 @@ import * as Location from "expo-location"
 import { AppState, type AppStateStatus } from "react-native"
 import { API_BASE_URL } from "../config/env"
 import { getSecureValue } from "../lib/secureStore"
-import { MOBILE_STORAGE_KEYS } from "@local-commerce-platform/mobile-shared"
+import { MOBILE_STORAGE_KEYS } from "../lib/shared"
 
 const GPS_INTERVAL_MS = 15_000 // send location every 15 s while active
 

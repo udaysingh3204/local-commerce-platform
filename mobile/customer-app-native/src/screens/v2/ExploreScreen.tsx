@@ -4,7 +4,7 @@ import {
   SafeAreaView, ScrollView, Text, TextInput, View,
 } from "react-native"
 import { useNavigation } from "@react-navigation/native"
-import { fetchJson } from "@local-commerce-platform/mobile-shared"
+import { fetchJson } from "../../lib/shared"
 import { API_BASE_URL } from "../../config/env"
 import { Colors, Font, Radius, Shadow, Spacing, CATEGORY_CONFIG } from "../../theme"
 import type { TabNavProp } from "../../navigation/types"

@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native"
-import type { AppConfig } from "@local-commerce-platform/mobile-shared"
+import type { AppConfig } from "../lib/shared"
 
 type DriverLoginScreenProps = {
   appConfig: AppConfig | null

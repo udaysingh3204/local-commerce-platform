@@ -7,7 +7,7 @@ import { useNavigation } from "@react-navigation/native"
 import { useApp } from "../../context/AppContext"
 import { Colors, Font, Radius, Shadow, Spacing } from "../../theme"
 import type { RootNavProp } from "../../navigation/types"
-import { fetchJson } from "@local-commerce-platform/mobile-shared"
+import { fetchJson } from "../../lib/shared"
 import { API_BASE_URL } from "../../config/env"
 
 type AvailablePromotion = {

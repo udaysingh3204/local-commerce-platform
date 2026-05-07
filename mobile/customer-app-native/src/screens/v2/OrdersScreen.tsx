@@ -4,7 +4,7 @@ import {
   SafeAreaView, ScrollView, Text, View,
 } from "react-native"
 import { useNavigation, useFocusEffect } from "@react-navigation/native"
-import { fetchJson } from "@local-commerce-platform/mobile-shared"
+import { fetchJson } from "../../lib/shared"
 import { API_BASE_URL } from "../../config/env"
 import { useApp } from "../../context/AppContext"
 import { Colors, Font, Radius, Shadow, Spacing, STATUS_CONFIG } from "../../theme"
