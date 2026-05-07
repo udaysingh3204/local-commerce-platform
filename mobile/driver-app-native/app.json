@@ -39,7 +39,9 @@
         "FOREGROUND_SERVICE",
         "FOREGROUND_SERVICE_LOCATION",
         "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE"
+        "VIBRATE",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
     "ios": {
@@ -49,13 +51,17 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "LocalMart Driver needs your location while delivering orders.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "LocalMart Driver needs your location to send live delivery tracking updates.",
-        "UIBackgroundModes": ["location", "fetch"]
+        "UIBackgroundModes": [
+          "location",
+          "fetch"
+        ]
       }
     },
     "extra": {
       "eas": {
-        "projectId": "localmart-driver"
+        "projectId": "aceed3a3-63b4-4593-927b-0acc52a2fa1a"
       }
-    }
+    },
+    "owner": "udaysingh3204"
   }
 }

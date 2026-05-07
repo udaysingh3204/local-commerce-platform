@@ -44,8 +44,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "localmart-customer"
+        "projectId": "d6636f43-eb48-4214-b7a4-5375865c5ada"
       }
-    }
+    },
+    "owner": "udaysingh3204"
   }
 }
