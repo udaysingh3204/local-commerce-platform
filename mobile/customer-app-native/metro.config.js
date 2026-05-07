@@ -3,9 +3,14 @@ const path = require("path")
 
 const config = getDefaultConfig(__dirname)
 
-// Resolve the shared package from within the app directory (no monorepo symlink needed)
+const sharedPath = path.resolve(__dirname, "src/lib/shared")
+
+// Both approaches for maximum compatibility
 config.resolver.extraNodeModules = {
-  "@local-commerce-platform/mobile-shared": path.resolve(__dirname, "src/lib/shared"),
+  "@local-commerce-platform/mobile-shared": sharedPath,
 }
+
+// Ensure shared files are watched and transformed (not excluded as node_modules)
+config.watchFolders = [...(config.watchFolders || []), sharedPath]
 
 module.exports = config
