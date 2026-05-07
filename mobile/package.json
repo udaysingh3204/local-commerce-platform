@@ -1,11 +1,6 @@
 {
   "name": "local-commerce-platform-mobile",
   "private": true,
-  "workspaces": [
-    "shared",
-    "customer-app-native",
-    "driver-app-native"
-  ],
   "scripts": {
     "start:customer": "npm --prefix ./customer-app-native run start",
     "start:driver": "npm --prefix ./driver-app-native run start",
