@@ -4,12 +4,14 @@
     "slug": "localmart-driver",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "scheme": "localmart-driver",
     "assetBundlePatterns": [
       "**/*"
     ],
     "splash": {
+      "image": "./assets/splash-icon.png",
       "backgroundColor": "#030712",
       "resizeMode": "contain"
     },
@@ -25,7 +27,7 @@
     ],
     "android": {
       "package": "com.localmart.driver",
-      "versionCode": 1,
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#030712"
