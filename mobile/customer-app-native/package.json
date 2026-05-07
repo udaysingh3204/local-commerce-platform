@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.5",
-    "@local-commerce-platform/mobile-shared": "file:../shared",
     "@react-navigation/bottom-tabs": "^7.15.9",
     "@react-navigation/native": "^7.2.2",
     "@react-navigation/stack": "^7.8.10",
