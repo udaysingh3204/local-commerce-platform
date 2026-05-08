@@ -1,57 +1,61 @@
 {
-    "expo":  {
-                 "name":  "LocalMart",
-                 "slug":  "localmart-customer",
-                 "version":  "1.0.0",
-                 "orientation":  "portrait",
-                 "icon":  "./assets/icon.png",
-                 "userInterfaceStyle":  "light",
-                 "scheme":  "localmart",
-                 "assetBundlePatterns":  [
-                                             "**/*"
-                                         ],
-                 "splash":  {
-                                "image":  "./assets/splash-icon.png",
-                                "backgroundColor":  "#7c3aed",
-                                "resizeMode":  "contain"
-                            },
-                 "plugins":  [
-                                 [
-                                     "expo-notifications",
-                                     {
-                                         "icon":  "./assets/notification-icon.png",
-                                         "color":  "#7c3aed",
-                                         "sounds":  [
-
-                                                    ]
-                                     }
-                                 ]
-                             ],
-                 "android":  {
-                                 "package":  "com.localmart.customer",
-                                 "versionCode":  6,
-                                 "adaptiveIcon":  {
-                                                      "foregroundImage":  "./assets/adaptive-icon.png",
-                                                      "backgroundColor":  "#7c3aed"
-                                                  },
-                                 "permissions":  [
-                                                     "INTERNET",
-                                                     "ACCESS_NETWORK_STATE",
-                                                     "RECEIVE_BOOT_COMPLETED",
-                                                     "VIBRATE"
-                                                 ]
-                             },
-                 "ios":  {
-                             "bundleIdentifier":  "com.localmart.customer",
-                             "supportsTablet":  true,
-                             "buildNumber":  "1"
-                         },
-                 "extra":  {
-                               "eas":  {
-                                           "projectId":  "d6636f43-eb48-4214-b7a4-5375865c5ada"
-                                       }
-                           },
-                 "owner":  "udaysingh3204",
-                 "newArchEnabled":  false
-             }
+  "expo": {
+    "name": "LocalMart",
+    "slug": "localmart-customer",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "localmart",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "backgroundColor": "#7c3aed",
+      "resizeMode": "contain"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#7c3aed",
+          "sounds": []
+        }
+      ],
+      [
+        "react-native-maps",
+        {
+          "googleMapsApiKey": ""
+        }
+      ]
+    ],
+    "android": {
+      "package": "com.localmart.customer",
+      "versionCode": 7,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#7c3aed"
+      },
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.localmart.customer",
+      "supportsTablet": true,
+      "buildNumber": "1"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d6636f43-eb48-4214-b7a4-5375865c5ada"
+      }
+    },
+    "owner": "udaysingh3204",
+    "newArchEnabled": false
+  }
 }
