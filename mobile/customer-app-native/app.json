@@ -23,17 +23,11 @@
           "color": "#7c3aed",
           "sounds": []
         }
-      ],
-      [
-        "react-native-maps",
-        {
-          "googleMapsApiKey": ""
-        }
       ]
     ],
     "android": {
       "package": "com.localmart.customer",
-      "versionCode": 7,
+      "versionCode": 8,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#7c3aed"

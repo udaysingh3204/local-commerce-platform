@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import {
   ActivityIndicator,
-  Platform,
   Pressable,
   RefreshControl,
   SafeAreaView,
@@ -40,18 +39,11 @@ type TrackingPayload = {
   driver?: DriverInfo | null
 }
 
-type NativeMapsModule = typeof import("react-native-maps")
-
 const LIVE_STATUSES = new Set(["accepted", "preparing", "out_for_delivery"])
 const MAP_W = 320
 const MAP_H = 280
 const MAP_PAD = 28
 const SOCKET_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "")
-
-const NativeMaps: NativeMapsModule | null = Platform.OS === "web" ? null : require("react-native-maps")
-const MapView = NativeMaps?.default
-const Marker = NativeMaps?.Marker
-const Polyline = NativeMaps?.Polyline
 
 const statusCopy: Record<string, { eyebrow: string; title: string; note: string }> = {
   pending: {
@@ -110,35 +102,6 @@ function toPoints(tracking: TrackingPayload | null): Point[] {
   if (tracking.deliveryLocation) fallback.push(tracking.deliveryLocation)
   if (tracking.customerLocation) fallback.push(tracking.customerLocation)
   return fallback
-}
-
-function toLatLng(point: Point) {
-  return { latitude: point.lat, longitude: point.lng }
-}
-
-function getMapRegion(points: Point[]) {
-  if (points.length === 0) {
-    return {
-      latitude: 28.6139,
-      longitude: 77.209,
-      latitudeDelta: 0.08,
-      longitudeDelta: 0.08,
-    }
-  }
-
-  const lats = points.map((point) => point.lat)
-  const lngs = points.map((point) => point.lng)
-  const minLat = Math.min(...lats)
-  const maxLat = Math.max(...lats)
-  const minLng = Math.min(...lngs)
-  const maxLng = Math.max(...lngs)
-
-  return {
-    latitude: (minLat + maxLat) / 2,
-    longitude: (minLng + maxLng) / 2,
-    latitudeDelta: Math.max(0.015, (maxLat - minLat) * 1.8),
-    longitudeDelta: Math.max(0.015, (maxLng - minLng) * 1.8),
-  }
 }
 
 function project(points: Point[]) {
@@ -267,8 +230,6 @@ export default function DeliveryRadarScreen() {
 
   const routePoints = useMemo(() => toPoints(tracking), [tracking])
   const projected = useMemo(() => project(routePoints), [routePoints])
-  const mapRegion = useMemo(() => getMapRegion(routePoints), [routePoints])
-  const nativePolyline = useMemo(() => routePoints.map(toLatLng), [routePoints])
 
   const courierPoint = projected[0] ?? null
   const homePoint = projected[projected.length - 1] ?? null
@@ -319,45 +280,7 @@ export default function DeliveryRadarScreen() {
             <Text style={{ color: "#cbd5e1", fontSize: Font.sm, marginTop: 8, lineHeight: 20 }}>{narrative.note}</Text>
 
             <View style={{ marginTop: Spacing.xl, borderRadius: 24, backgroundColor: "#020617", padding: Spacing.md, borderWidth: 1, borderColor: "rgba(103,232,249,0.15)" }}>
-              {Platform.OS !== "web" && MapView && Marker && Polyline ? (
-                <View style={{ height: MAP_H, borderRadius: 20, overflow: "hidden" }}>
-                  <MapView
-                    style={{ flex: 1 }}
-                    initialRegion={mapRegion}
-                    region={mapRegion}
-                    showsCompass
-                    showsUserLocation={false}
-                    pitchEnabled={false}
-                    rotateEnabled={false}
-                  >
-                    {nativePolyline.length > 1 && (
-                      <Polyline coordinates={nativePolyline} strokeColor="#22d3ee" strokeWidth={4} />
-                    )}
-                    {tracking?.deliveryLocation && (
-                      <Marker coordinate={toLatLng(tracking.deliveryLocation)} title="Courier" description="Live driver location">
-                        <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: "#22d3ee", alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "#cffafe" }}>
-                          <Text style={{ fontSize: 16 }}>🛵</Text>
-                        </View>
-                      </Marker>
-                    )}
-                    {tracking?.customerLocation && (
-                      <Marker coordinate={toLatLng(tracking.customerLocation)} title="Destination" description="Your drop location">
-                        <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: "#f472b6", alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "#fce7f3" }}>
-                          <Text style={{ fontSize: 16 }}>🏠</Text>
-                        </View>
-                      </Marker>
-                    )}
-                  </MapView>
-                  <View style={{ position: "absolute", top: 12, left: 12, right: 12, flexDirection: "row", justifyContent: "space-between" }}>
-                    <View style={{ backgroundColor: "rgba(15,23,42,0.85)", borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 6 }}>
-                      <Text style={{ color: "#67e8f9", fontSize: Font.xs, fontWeight: "800" }}>LIVE MAP</Text>
-                    </View>
-                    <View style={{ backgroundColor: "rgba(15,23,42,0.85)", borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 6 }}>
-                      <Text style={{ color: "#fff", fontSize: Font.xs, fontWeight: "800" }}>{tracking?.distanceKm?.toFixed(1) ?? "--"} km</Text>
-                    </View>
-                  </View>
-                </View>
-              ) : (
+              (
                 <View style={{ height: MAP_H, borderRadius: 20, overflow: "hidden", backgroundColor: "#020817", position: "relative" }}>
                   {[0, 1, 2, 3, 4].map((line) => (
                     <View key={`h-${line}`} style={{ position: "absolute", left: 0, right: 0, top: line * (MAP_H / 4), height: 1, backgroundColor: "rgba(148,163,184,0.12)" }} />
