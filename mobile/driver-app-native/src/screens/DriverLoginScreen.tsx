@@ -1,14 +1,16 @@
 import { useState } from "react"
 import { Pressable, SafeAreaView, Text, TextInput, View } from "react-native"
+import GoogleOAuthButton from "../components/GoogleOAuthButton"
 import type { AppConfig } from "../lib/shared"
 
 type DriverLoginScreenProps = {
   appConfig: AppConfig | null
   error: string | null
   onLogin: (email: string, password: string) => Promise<void>
+  onGoogleLogin?: (email: string, name: string, googleId: string) => Promise<void>
 }
 
-export default function DriverLoginScreen({ appConfig, error, onLogin }: DriverLoginScreenProps) {
+export default function DriverLoginScreen({ appConfig, error, onLogin, onGoogleLogin }: DriverLoginScreenProps) {
   const [email, setEmail] = useState("driver.one@localmart.demo")
   const [password, setPassword] = useState("Driver12345!")
   const [submitting, setSubmitting] = useState(false)
@@ -53,6 +55,15 @@ export default function DriverLoginScreen({ appConfig, error, onLogin }: DriverL
           <Pressable onPress={handleSubmit} disabled={submitting} style={{ marginTop: 18, borderRadius: 16, backgroundColor: "#f59e0b", paddingVertical: 14, alignItems: "center", opacity: submitting ? 0.7 : 1 }}>
             <Text style={{ color: "#111827", fontWeight: "900" }}>{submitting ? "Signing in..." : "Sign In"}</Text>
           </Pressable>
+
+          <Text style={{ marginTop: 16, color: "#475569", textAlign: "center", fontWeight: "600" }}>or</Text>
+
+          <GoogleOAuthButton
+            onSuccess={onGoogleLogin || (() => Promise.resolve())}
+            onError={(err) => setSubmitError(err.message)}
+            disabled={submitting}
+            isDark
+          />
         </View>
       </View>
     </SafeAreaView>
