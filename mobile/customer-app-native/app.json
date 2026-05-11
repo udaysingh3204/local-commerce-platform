@@ -27,7 +27,7 @@
     ],
     "android": {
       "package": "com.localmart.customer",
-      "versionCode": 8,
+      "versionCode": 9,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#7c3aed"
