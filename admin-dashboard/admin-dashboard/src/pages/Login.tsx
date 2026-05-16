@@ -3,9 +3,6 @@ import { useNavigate } from "react-router-dom"
 import API from "../api/api"
 import GoogleSignInButton from "../components/GoogleSignInButton"
 
-const ADMIN_EMAIL = "admin@localmart.com"
-const ADMIN_PASSWORD = "Admin@2024"
-
 export default function AdminLogin() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -30,14 +27,7 @@ export default function AdminLogin() {
       localStorage.setItem("adminUser", JSON.stringify(user))
       navigate("/")
     } catch (apiError: any) {
-      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        localStorage.setItem("adminAuth", "true")
-        localStorage.removeItem("adminToken")
-        localStorage.removeItem("adminUser")
-        navigate("/")
-      } else {
-        setError(apiError?.response?.data?.message || apiError?.message || "Invalid admin credentials")
-      }
+      setError(apiError?.response?.data?.message || apiError?.message || "Invalid admin credentials")
     }
     setLoading(false)
   }
@@ -175,9 +165,6 @@ export default function AdminLogin() {
             ) : "Access Dashboard →"}
           </button>
 
-          <p className="text-center text-slate-700 text-xs mt-6">
-            Default: admin@localmart.com / Admin@2024
-          </p>
         </div>
       </div>
     </div>

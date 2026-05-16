@@ -9,6 +9,11 @@ initSentry();
 
 const logger = require("./config/logger");
 
+if (!process.env.JWT_SECRET) {
+  logger.error("JWT_SECRET is not set — refusing to start");
+  process.exit(1);
+}
+
 if (!process.env.GOOGLE_CLIENT_ID) {
   logger.warn("[auth] GOOGLE_CLIENT_ID is not configured. Google sign-in is disabled.")
 }
@@ -101,7 +106,6 @@ const ALLOWED_ORIGINS = [...new Set([...DEFAULT_ALLOWED_ORIGINS, ...configuredOr
 function isAllowedOrigin(origin) {
   if (!origin) return true; // same-origin / server-to-server
   if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return true;
-  if (/^https:\/\/[\w-]+\.vercel\.app$/.test(origin)) return true;
   return ALLOWED_ORIGINS.includes(origin);
 }
 
@@ -114,6 +118,18 @@ const io = new Server(server, {
     },
     methods: ["GET", "POST", "PATCH"],
     credentials: true
+  }
+});
+
+const jwt = require("jsonwebtoken");
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization?.split(" ")[1];
+  if (!token) return next(new Error("Authentication required"));
+  try {
+    socket.user = jwt.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch {
+    next(new Error("Invalid token"));
   }
 });
 
@@ -136,6 +152,9 @@ app.use(cors({
 app.post("/api/payment/webhook", express.raw({ type: "application/json" }), handlePaymentWebhook)
 app.post("/api/payments/webhook", express.raw({ type: "application/json" }), handlePaymentWebhook)
 app.use(express.json());
+
+const xss = require("xss-clean");
+app.use(xss());
 
 app.use(helmet())
 app.use(limiter)
@@ -244,9 +263,11 @@ io.on("connection", (socket) => {
     logger.debug("User disconnected: " + socket.id);
   });
 
-  socket.on("driverLocationUpdate", ({ driverId, location }) => {
-    global.drivers = global.drivers || {}
-    global.drivers[driverId] = location
+  socket.on("driverLocationUpdate", ({ location }) => {
+    const driverId = socket.user?.id;
+    if (!driverId) return;
+    global.drivers = global.drivers || {};
+    global.drivers[driverId] = location;
   })
 });
 

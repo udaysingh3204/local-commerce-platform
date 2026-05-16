@@ -137,8 +137,6 @@ const getDelayState = (order) => {
 
 exports.createOrder = async (req, res) => {
   try {
-    console.log("🔥 Order API HIT");
-
     const { items, storeId, promotion } = req.body;
 
     const orderItems = [];
@@ -203,8 +201,13 @@ exports.createOrder = async (req, res) => {
       };
     }
 
+    const { customerId, deliveryAddress, customerLocation, paymentMethod } = req.body;
     const order = await Order.create({
-      ...req.body,
+      customerId,
+      storeId,
+      deliveryAddress,
+      customerLocation,
+      paymentMethod,
       items: orderItems,
       totalAmount: finalAmount,
       pricingBreakdown: {

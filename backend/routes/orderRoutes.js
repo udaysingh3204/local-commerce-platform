@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { validateBody, schemas } = require("../middleware/validate");
+const { protect } = require("../middleware/authMiddleware");
 
 const Order = require("../models/Order");
 
@@ -15,38 +16,39 @@ const {
 } = require("../controllers/orderController");
 
 /* CREATE ORDER */
-router.post("/", validateBody(schemas.createOrder), createOrder);
+router.post("/", protect, validateBody(schemas.createOrder), createOrder);
 
 /* STORE ORDERS */
-router.get("/store/:storeId", getOrdersByStore);
+router.get("/store/:storeId", protect, getOrdersByStore);
 
 /* CUSTOMER ORDERS */
-router.get("/customer/:customerId", getOrdersByCustomer);
+router.get("/customer/:customerId", protect, getOrdersByCustomer);
 
 /* GET ALL ORDERS (DRIVER DASHBOARD) */
-router.get("/", getAllOrders); // ✅ use controller
+router.get("/", protect, getAllOrders);
 
 /* GET ALL ORDERS (ADMIN - unfiltered) */
-router.get("/all", async (req, res) => {
+router.get("/all", protect, async (req, res) => {
+  if (req.user.role !== "admin") return res.status(403).json({ message: "Forbidden" });
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json(orders);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
 /* GET RANKED DISPATCH RECOMMENDATIONS (ADMIN) */
-router.get("/dispatch/recommendations", getDispatchRecommendations);
+router.get("/dispatch/recommendations", protect, getDispatchRecommendations);
 
 /* GET LIVE TRACKING PAYLOAD */
-router.get("/:id/tracking", getOrderTracking);
+router.get("/:id/tracking", protect, getOrderTracking);
 
 /* UPDATE ORDER STATUS */
-router.patch("/:id/status", updateOrderStatus);
+router.patch("/:id/status", protect, updateOrderStatus);
 
 /* CANCEL ORDER */
-router.patch("/:id/cancel", async (req, res) => {
+router.patch("/:id/cancel", protect, async (req, res) => {
   try {
     const { reason } = req.body;
     const order = await Order.findById(req.params.id);

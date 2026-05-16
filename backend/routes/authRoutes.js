@@ -22,12 +22,13 @@ router.get("/me", protect, me);
 router.get("/bootstrap", protect, bootstrap);
 
 /* GET ALL USERS (admin) */
-router.get("/users", async (req, res) => {
+router.get("/users", protect, async (req, res) => {
+  if (req.user.role !== "admin") return res.status(403).json({ message: "Forbidden" });
   try {
     const users = await User.find().select("-password -passwordResetToken").sort({ createdAt: -1 });
     res.json(users);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 

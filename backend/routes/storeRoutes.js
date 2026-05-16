@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { protect } = require("../middleware/authMiddleware");
 
 const {
   createStore,
@@ -9,7 +10,7 @@ const {
   getNearbyStores
 } = require("../controllers/storeController");
 
-router.post("/", createStore);
+router.post("/", protect, createStore);
 router.get("/", getStores);
 router.get("/vendor/:vendorId", getVendorStores);
 router.get("/nearby", getNearbyStores);

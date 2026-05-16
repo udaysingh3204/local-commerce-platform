@@ -1,5 +1,5 @@
 const express = require("express");
-const authMiddleware = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/protect");
 const paymentService = require("../services/paymentService");
 const { validateBody, schemas } = require("../middleware/validate");
 const Order = require("../models/Order");
@@ -14,9 +14,9 @@ const router = express.Router();
 
 // Legacy endpoints
 router.get("/config", getPaymentConfig);
-router.post("/create-order", validateBody(schemas.createPaymentOrder), createPaymentOrder);
-router.post("/verify", validateBody(schemas.verifyPayment), verifyPayment);
-router.post("/fail", markPaymentFailed);
+router.post("/create-order", protect, validateBody(schemas.createPaymentOrder), createPaymentOrder);
+router.post("/verify", protect, validateBody(schemas.verifyPayment), verifyPayment);
+router.post("/fail", protect, markPaymentFailed);
 
 // ============================================
 // New Payment Service Endpoints (Phase 2)
@@ -26,7 +26,7 @@ router.post("/fail", markPaymentFailed);
  * POST /api/payments/create-upi
  * Create UPI payment intent
  */
-router.post('/create-upi', authMiddleware, async (req, res) => {
+router.post('/create-upi', protect, async (req, res) => {
   try {
     const { orderId, amount, vpa } = req.body;
     const { userId } = req.user;
@@ -49,7 +49,7 @@ router.post('/create-upi', authMiddleware, async (req, res) => {
  * GET /api/payments/wallet
  * Get user's wallet balance and status
  */
-router.get('/wallet', authMiddleware, async (req, res) => {
+router.get('/wallet', protect, async (req, res) => {
   try {
     const { userId } = req.user;
 
@@ -69,7 +69,7 @@ router.get('/wallet', authMiddleware, async (req, res) => {
  * POST /api/payments/wallet/add
  * Add money to wallet (recharge)
  */
-router.post('/wallet/add', authMiddleware, async (req, res) => {
+router.post('/wallet/add', protect, async (req, res) => {
   try {
     const { amount, transactionId } = req.body;
     const { userId } = req.user;
@@ -94,7 +94,7 @@ router.post('/wallet/add', authMiddleware, async (req, res) => {
  * POST /api/payments/use-wallet
  * Pay for order using wallet
  */
-router.post('/use-wallet', authMiddleware, async (req, res) => {
+router.post('/use-wallet', protect, async (req, res) => {
   try {
     const { orderId, amount } = req.body;
     const { userId } = req.user;
@@ -123,7 +123,7 @@ router.post('/use-wallet', authMiddleware, async (req, res) => {
  * GET /api/payments/wallet/transactions
  * Get wallet transaction history
  */
-router.get('/wallet/transactions', authMiddleware, async (req, res) => {
+router.get('/wallet/transactions', protect, async (req, res) => {
   try {
     const { userId } = req.user;
     const { limit = 20 } = req.query;
@@ -141,7 +141,7 @@ router.get('/wallet/transactions', authMiddleware, async (req, res) => {
  * GET /api/payments/methods
  * Get available payment methods for user
  */
-router.get('/methods', authMiddleware, async (req, res) => {
+router.get('/methods', protect, async (req, res) => {
   try {
     const { userId } = req.user;
 
@@ -158,7 +158,7 @@ router.get('/methods', authMiddleware, async (req, res) => {
  * POST /api/payments/refund
  * Process refund to wallet (admin/system only)
  */
-router.post('/refund', authMiddleware, async (req, res) => {
+router.post('/refund', protect, async (req, res) => {
   try {
     if (req.user.role !== 'admin' && req.user.role !== 'support_agent') {
       return res.status(403).json({
@@ -193,7 +193,7 @@ router.post('/refund', authMiddleware, async (req, res) => {
  * GET /api/payments/order/:orderId
  * Get payment status for an order
  */
-router.get('/order/:orderId', authMiddleware, async (req, res) => {
+router.get('/order/:orderId', protect, async (req, res) => {
   try {
     const { orderId } = req.params;
 
