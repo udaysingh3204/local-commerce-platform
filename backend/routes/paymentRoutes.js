@@ -1,5 +1,5 @@
 const express = require("express");
-const { protect } = require("../middleware/protect");
+const { protect } = require("../middleware/authMiddleware");
 const paymentService = require("../services/paymentService");
 const { validateBody, schemas } = require("../middleware/validate");
 const Order = require("../models/Order");
