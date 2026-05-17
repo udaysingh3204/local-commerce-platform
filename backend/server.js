@@ -189,10 +189,11 @@ app.get("/health", async (req, res) => {
   } catch {
     redisStatus = "error";
   }
-  const status = dbState === 1 ? 200 : 503;
-  res.status(status).json({
+  // Always return 200 — Railway healthcheck is a liveness probe.
+  // MongoDB status is reported in the body so dashboards can still alert on DEGRADED.
+  res.status(200).json({
     status: dbState === 1 ? "OK" : "DEGRADED",
-    db: dbState === 1 ? "ok" : "error",
+    db: dbState === 1 ? "ok" : "connecting",
     redis: redisStatus,
     uptime: Math.floor(process.uptime()),
     version: process.env.npm_package_version || "1.0.0",
