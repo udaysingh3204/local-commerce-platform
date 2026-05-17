@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "react-router-dom"
-import API from "../api/api"
+import API, { BACKEND_ORIGIN } from "../api/api"
 import { toast } from "sonner"
+import { io } from "socket.io-client"
 
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
   pending:          { label: "Pending",           color: "text-yellow-400",  bg: "bg-yellow-500/10 border-yellow-500/20",  dot: "bg-yellow-400"  },
@@ -45,9 +46,28 @@ export default function Orders() {
 
   useEffect(() => {
     API.get("/orders/all")
-      .then(res => setOrders(res.data))
-      .catch(console.error)
+      .then(res => setOrders(Array.isArray(res.data) ? res.data : []))
+      .catch(() => toast.error("Failed to load orders"))
       .finally(() => setLoading(false))
+
+    const token = localStorage.getItem("adminToken")
+    const socket = io(BACKEND_ORIGIN, { auth: { token }, autoConnect: false })
+    socket.connect()
+
+    socket.on("newOrder", (order: any) => {
+      setOrders(prev => [order, ...prev])
+      toast.info("New order received", { description: `Order #${String(order._id).slice(-6).toUpperCase()}` })
+    })
+
+    socket.on("orderStatusUpdated", (updated: any) => {
+      setOrders(prev => prev.map(o => o._id === updated.orderId ? { ...o, status: updated.status } : o))
+    })
+
+    return () => {
+      socket.off("newOrder")
+      socket.off("orderStatusUpdated")
+      socket.disconnect()
+    }
   }, [])
 
   const counts: Record<string, number> = {}

@@ -57,6 +57,7 @@ export default function Orders() {
 
   useEffect(() => {
     fetchOrders()
+    socket.connect()
     const onNew = (order: any) => {
       setOrders(prev => [order, ...prev])
       toast.success("New order received!", { description: `Order #${order._id?.slice(-6).toUpperCase()}` })
@@ -66,7 +67,11 @@ export default function Orders() {
     }
     socket.on("newOrder", onNew)
     socket.on("orderStatusUpdated", onUpdate)
-    return () => { socket.off("newOrder", onNew); socket.off("orderStatusUpdated", onUpdate) }
+    return () => {
+      socket.off("newOrder", onNew)
+      socket.off("orderStatusUpdated", onUpdate)
+      socket.disconnect()
+    }
   }, [fetchOrders])
 
   const updateStatus = async (id: string, status: string) => {

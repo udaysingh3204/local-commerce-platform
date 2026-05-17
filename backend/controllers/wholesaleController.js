@@ -96,6 +96,9 @@ exports.createWholesaleOrder = async (req, res) => {
       }],
     });
 
+    const io = req.app.get("io");
+    if (io) io.emit("newWholesaleOrder", order);
+
     res.json({
       message: "Wholesale order placed",
       order

@@ -3,22 +3,20 @@ import { useEffect, useState } from "react"
 import { io } from "socket.io-client"
 import { BACKEND_ORIGIN } from "../api/api"
 
-const socket = io(BACKEND_ORIGIN)
-
 export default function OrderTracking(){
 
 const [position,setPosition] = useState<[number,number]>([28.6139,77.2090])
 
 useEffect(()=>{
+const token = localStorage.getItem("token")
+const socket = io(BACKEND_ORIGIN, { auth: { token }, autoConnect: false })
+socket.connect()
 
 socket.on("deliveryLocationUpdate",(data)=>{
-
-console.log("Location update received",data)
-
 setPosition([data.lat,data.lng])
-
 })
 
+return () => { socket.disconnect() }
 },[])
 
 return(

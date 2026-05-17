@@ -5,8 +5,6 @@ import { useNavigate } from "react-router-dom"
 import { io } from "socket.io-client"
 import { toast } from "sonner"
 
-const socket = io(BACKEND_ORIGIN)
-
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-yellow-900/40 text-yellow-400 border-yellow-800",
   accepted: "bg-blue-900/40 text-blue-400 border-blue-800",
@@ -179,18 +177,16 @@ export default function Deliveries() {
   }
 
   useEffect(() => {
+    const token = localStorage.getItem("driverToken")
+    const socket = io(BACKEND_ORIGIN, { auth: { token }, autoConnect: false })
+    socket.connect()
+
     socket.on("newOrder", (order) => {
       if (!order.deliveryPartnerId) {
         setOpenOrders((prev) => [order, ...prev.filter((existing) => existing._id !== order._id)])
       }
     })
 
-    return () => {
-      socket.off("newOrder")
-    }
-  }, [])
-
-  useEffect(() => {
     socket.on("deliveryAssigned", (data: DeliveryAssignedEvent) => {
       const currentDriver = JSON.parse(localStorage.getItem("driver") || "{}") as DriverProfile
       if (data.driverId === currentDriver._id) {
@@ -201,7 +197,9 @@ export default function Deliveries() {
     })
 
     return () => {
+      socket.off("newOrder")
       socket.off("deliveryAssigned")
+      socket.disconnect()
     }
   }, [fetchWorkspace])
 

@@ -1,15 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { io } from "socket.io-client"
+import { io, Socket } from "socket.io-client"
 import { MapContainer, Marker, Polyline, TileLayer, useMap } from "react-leaflet"
-import API from "../api/api"
-import { BACKEND_ORIGIN } from "../api/api"
+import API, { BACKEND_ORIGIN } from "../api/api"
 import { useParams } from "react-router-dom"
 import L from "leaflet"
 import confetti from "canvas-confetti"
 import { toast } from "sonner"
 import "leaflet/dist/leaflet.css"
-
-const socket = io(BACKEND_ORIGIN)
 
 const DEFAULT_CUSTOMER_LOCATION = { lat: 28.6139, lng: 77.209, }
 
@@ -115,6 +112,7 @@ function FitToRoute({ points }: { points: [number, number][] }) {
 
 export default function TrackOrder() {
   const { orderId } = useParams()
+  const socketRef = useRef<Socket | null>(null)
 
   const [rawLocation, setRawLocation] = useState<{ lat: number; lng: number } | null>(null)
   const smoothLocation = rawLocation
@@ -254,6 +252,11 @@ export default function TrackOrder() {
   useEffect(() => {
     if (!orderId) return
 
+    const token = localStorage.getItem("token")
+    const socket = io(BACKEND_ORIGIN, { auth: { token }, autoConnect: false })
+    socketRef.current = socket
+    socket.connect()
+
     const loadTimer = window.setTimeout(() => {
       void loadTracking(true)
     }, 0)
@@ -292,6 +295,8 @@ export default function TrackOrder() {
       window.clearTimeout(loadTimer)
       socket.off("deliveryLocationUpdate")
       socket.off("orderStatusUpdated")
+      socket.disconnect()
+      socketRef.current = null
     }
   }, [loadTracking, notifyStatusChange, orderId])
 

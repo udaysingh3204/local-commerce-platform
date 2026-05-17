@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
-import API from "../api/api"
+import API, { BACKEND_ORIGIN } from "../api/api"
 import { useSupplier } from "../context/SupplierContext"
+import { io } from "socket.io-client"
 
 const STATUS_CFG: Record<string, { label: string; bg: string; text: string; dot: string }> = {
   pending: { label: "Pending", bg: "bg-yellow-500/10 border-yellow-500/20", text: "text-yellow-400", dot: "bg-yellow-400" },
@@ -60,6 +61,25 @@ export default function Orders() {
 
   useEffect(() => {
     void load()
+  }, [supplier?._id])
+
+  useEffect(() => {
+    if (!supplier?._id) return
+    const token = localStorage.getItem("supplierToken")
+    const socket = io(BACKEND_ORIGIN, { auth: { token }, autoConnect: false })
+    socket.connect()
+
+    socket.on("newWholesaleOrder", (order: any) => {
+      if (order.supplierId !== supplier._id) return
+      setOrders(prev => [order, ...prev])
+      setActionMessage(`New wholesale order received — #${String(order._id).slice(-6).toUpperCase()}`)
+      setTimeout(() => setActionMessage(""), 5000)
+    })
+
+    return () => {
+      socket.off("newWholesaleOrder")
+      socket.disconnect()
+    }
   }, [supplier?._id])
 
   const statuses = ["all", ...Object.keys(STATUS_CFG)]
