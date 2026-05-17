@@ -153,17 +153,14 @@ app.post("/api/payment/webhook", express.raw({ type: "application/json" }), hand
 app.post("/api/payments/webhook", express.raw({ type: "application/json" }), handlePaymentWebhook)
 app.use(express.json());
 
-const xss = require("xss-clean");
-app.use(xss());
-
 app.use(helmet())
 app.use(limiter)
 app.use(hpp())
 app.use(compression())
 
-app.use((req,res,next)=>{
+app.use((req, res, next) => {
+  // Sanitize body against NoSQL injection (req.query is read-only in Express 5)
   req.body = mongoSanitize(req.body)
-  req.query = mongoSanitize(req.query)
   next()
 })
 /* REQUEST LOGGER (helps debugging) */
