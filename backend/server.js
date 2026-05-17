@@ -271,6 +271,14 @@ io.on("connection", (socket) => {
   })
 });
 
+/* START SERVER FIRST — so healthcheck is reachable before DB connects */
+
+const PORT = process.env.PORT || 5000;
+
+server.listen(PORT, () => {
+  logger.info(`Server running on port ${PORT}`);
+});
+
 /* DATABASE CONNECTION */
 
 mongoose.connect(process.env.MONGO_URI)
@@ -285,12 +293,6 @@ mongoose.connect(process.env.MONGO_URI)
   } catch (err) {
     logger.error("ML Service initialization error", { error: err.message });
   }
-
-  const PORT = process.env.PORT || 5000;
-
-  server.listen(PORT, () => {
-    logger.info(`Server running on port ${PORT}`);
-  });
 
 })
 
